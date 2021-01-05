@@ -17,6 +17,17 @@ void main() {
   return runApp(new MyApp());
 }
 
+class User {
+  const User(this.name);
+  final String name;
+}
+
+class IndexTranscript {
+  IndexTranscript({this.number, this.dirName});
+  int number;
+  String dirName;
+}
+
 class MyApp extends StatefulWidget {
   // final Person person;
 
@@ -39,17 +50,6 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-class User {
-  const User(this.name);
-  final String name;
-}
-
-class IndexTranscript {
-  IndexTranscript(this.number, this.dirName);
-  final int number;
-  String dirName;
-}
-
 class RecorderExample extends StatefulWidget {
   final LocalFileSystem localFileSystem;
 
@@ -68,7 +68,9 @@ class RecorderExampleState extends State<RecorderExample> {
   User jenisKelaminUser;
   List<User> users = <User>[User('Perempuan'), User('Laki-laki')];
 
-  IndexTranscript indextranscript;
+  // IndexTranscript indextranscript;
+  // var directoryName = new IndexTranscript(0, 'dirName');
+  final indextranscript = IndexTranscript(number: 0, dirName: 'dirName');
   // >> Form
   TextEditingController usernameField = TextEditingController();
   TextEditingController dialekField = TextEditingController();
@@ -250,13 +252,22 @@ class RecorderExampleState extends State<RecorderExample> {
                   String _username = usernameField.text;
                   String _dialek = dialekField.text;
                   String _dirname =
-                      "$_username\_$_jenisKelamin\_$_formattedDate\_$_transcript\_$_dialek";
+                      "$_username\_$_jenisKelamin\_$_formattedDate\_$_transcript\_$_dialek\_hp";
                   print(_dirname);
-                  indextranscript.dirName = _dirname;
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(builder: (context) => Recorder()),
-                  // );
+                  setState(() {
+                    indextranscript.dirName = _dirname;
+                  });
+                  // directoryName.dirName = _dirname;
+                  print('b');
+                  print(indextranscript.dirName);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            RecorderPage(indextranscript: indextranscript)),
+                    // RecorderPage(
+                    //     dir_name: new IndexTranscript(0, _dirname))),
+                  );
                 },
               ),
               // new Text("Status : $_currentStatus"),
@@ -324,9 +335,286 @@ class RecorderExampleState extends State<RecorderExample> {
     try {
       if (await FlutterAudioRecorder.hasPermissions) {
         // String customDir = '/20201218/';
-        indextranscript.dirName = "test";
+        // indextranscript.dirName = "test";
         // String customDir = '/${indextranscript.dirName}/';
         String customDir = '/test/';
+        io.Directory appDocDirectory;
+        if (io.Platform.isIOS) {
+          appDocDirectory = await getApplicationDocumentsDirectory();
+        } else {
+          appDocDirectory = await getExternalStorageDirectory();
+        }
+
+        //create Variable
+        String directory = appDocDirectory.path;
+
+        //create directory and its subdirectory
+        if (await io.Directory(directory + customDir).exists() != true) {
+          print("Directory not exist");
+          new io.Directory(directory + customDir).createSync(recursive: true);
+        } else {
+          print("Directoryexist");
+        }
+
+        customDir = directory +
+            customDir +
+            DateTime.now().millisecondsSinceEpoch.toString();
+
+        // .wav <---> AudioFormat.WAV
+        // .mp4 .m4a .aac <---> AudioFormat.AAC
+        // AudioFormat is optional, if given value, will overwrite path extension when there is conflicts.
+        _recorder = FlutterAudioRecorder(customDir,
+            audioFormat: AudioFormat.WAV, sampleRate: 16000);
+
+        await _recorder.initialized;
+        // after initialization
+        var current = await _recorder.current(channel: 0);
+        print(current);
+        // should be "Initialized", if all working fine
+        setState(() {
+          _current = current;
+          _currentStatus = current.status;
+          print(_currentStatus);
+        });
+      }
+      // else {
+      //   Scaffold.of(context).showSnackBar(
+      //       new SnackBar(content: new Text("You must accept permissions")));
+      // }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  _start() async {
+    try {
+      await _recorder.start();
+      var recording = await _recorder.current(channel: 0);
+      setState(() {
+        _current = recording;
+      });
+
+      const tick = const Duration(milliseconds: 50);
+      new Timer.periodic(tick, (Timer t) async {
+        if (_currentStatus == RecordingStatus.Stopped) {
+          t.cancel();
+        }
+
+        var current = await _recorder.current(channel: 0);
+        // print(current.status);
+        setState(() {
+          _current = current;
+          _currentStatus = _current.status;
+        });
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  _resume() async {
+    await _recorder.resume();
+    setState(() {});
+  }
+
+  _pause() async {
+    await _recorder.pause();
+    setState(() {});
+  }
+
+  _stop() async {
+    var result = await _recorder.stop();
+    print("Stop recording: ${result.path}");
+    print("Stop recording: ${result.duration}");
+    File file = widget.localFileSystem.file(result.path);
+    print("File length: ${await file.length()}");
+    setState(() {
+      _current = result;
+      _currentStatus = _current.status;
+    });
+  }
+
+  Widget _buildText(RecordingStatus status) {
+    var text = "";
+    switch (_currentStatus) {
+      case RecordingStatus.Initialized:
+        {
+          text = 'Start';
+          break;
+        }
+      case RecordingStatus.Recording:
+        {
+          text = 'Pause';
+          break;
+        }
+      case RecordingStatus.Paused:
+        {
+          text = 'Resume';
+          break;
+        }
+      case RecordingStatus.Stopped:
+        {
+          text = 'Init';
+          break;
+        }
+      default:
+        break;
+    }
+    return Text(text, style: TextStyle(color: Colors.white));
+  }
+
+  void onPlayAudio() async {
+    AudioPlayer audioPlayer = AudioPlayer();
+    await audioPlayer.play(_current.path, isLocal: true);
+  }
+}
+
+/*
+ * Recording Page
+ */
+
+// class RecordingPage extends StatefulWidget {
+//   @override
+//   _RecordingPageState createState() => new _RecordingPageState();
+// }
+
+// class _RecordingPageState extends State<RecordingPage> {
+//   @override
+//   Widget build(BuildContext context) {
+//     return new MaterialApp(
+//       home: new Scaffold(
+//         body: SafeArea(
+//           child: new RecorderPage(),
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+class RecorderPage extends StatefulWidget {
+  final LocalFileSystem localFileSystem;
+  // final IndexTranscript directoryName;
+  final IndexTranscript indextranscript;
+
+  RecorderPage({localFileSystem, this.indextranscript})
+      : this.localFileSystem = localFileSystem ?? LocalFileSystem();
+
+  @override
+  // State<StatefulWidget> createState() => new RecorderPageState();
+  RecorderPageState createState() => new RecorderPageState(indextranscript);
+}
+
+class RecorderPageState extends State<RecorderPage> {
+  // final IndexTranscript directoryName;
+  // IndexTranscript dir_name;
+  IndexTranscript indextranscript;
+  RecorderPageState(this.indextranscript);
+  FlutterAudioRecorder _recorder;
+  Recording _current;
+  RecordingStatus _currentStatus = RecordingStatus.Unset;
+
+  // RecorderPageState({Key key, @required this.dirName});
+
+  // RecorderPageState({this.directoryName});
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _init();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new MaterialApp(
+      home: new Scaffold(
+        body: SafeArea(
+          child: new Padding(
+            padding: new EdgeInsets.all(8.0),
+            child: new Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+                  // new Text("Status : $_currentStatus"),
+                  new Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: new FlatButton(
+                          onPressed: () {
+                            switch (_currentStatus) {
+                              case RecordingStatus.Initialized:
+                                {
+                                  _start();
+                                  break;
+                                }
+                              case RecordingStatus.Recording:
+                                {
+                                  _pause();
+                                  break;
+                                }
+                              case RecordingStatus.Paused:
+                                {
+                                  _resume();
+                                  break;
+                                }
+                              case RecordingStatus.Stopped:
+                                {
+                                  _init();
+                                  break;
+                                }
+                              default:
+                                break;
+                            }
+                          },
+                          child: _buildText(_currentStatus),
+                          color: Colors.lightBlue,
+                        ),
+                      ),
+                      new FlatButton(
+                        onPressed: _currentStatus != RecordingStatus.Unset
+                            ? _stop
+                            : null,
+                        child: new Text("Stop",
+                            style: TextStyle(color: Colors.white)),
+                        color: Colors.blueAccent.withOpacity(0.5),
+                      ),
+                      SizedBox(
+                        width: 8,
+                      ),
+                      new FlatButton(
+                        onPressed: onPlayAudio,
+                        child: new Text("Play",
+                            style: TextStyle(color: Colors.white)),
+                        color: Colors.blueAccent.withOpacity(0.5),
+                      ),
+                    ],
+                  ),
+                  new Text("File path of the record: ${_current?.path}"),
+                ]),
+          ),
+        ),
+      ),
+    );
+    // return new Center(
+    // );
+  }
+
+  _init() async {
+    try {
+      if (await FlutterAudioRecorder.hasPermissions) {
+        // print(directoryName.)
+        // String customDir = '/20201218/';
+        // indextranscript.dirName = "test";
+        // String customDir = '/${indextranscript.dirName}/';
+        // print(directoryName.dirName);
+        // print()
+        // print()
+        // String customDir = '/test/';
+        String customDir = '/${indextranscript.dirName}/';
+        // example: rut122_f_20201216_001_audiobuku_yogyakarta_hp
+        // String customFileName =
+
         io.Directory appDocDirectory;
         if (io.Platform.isIOS) {
           appDocDirectory = await getApplicationDocumentsDirectory();
