@@ -23,9 +23,10 @@ class User {
 }
 
 class IndexTranscript {
-  IndexTranscript({this.number, this.dirName});
-  int number;
-  String dirName;
+  IndexTranscript({this.number, this.dirName, this.fileName});
+  final number; // format number 001, 0001, 01, ...
+  String dirName; // custom directory name
+  String fileName; // custom file name (dirName + increment index)
 }
 
 class MyApp extends StatefulWidget {
@@ -70,7 +71,10 @@ class RecorderExampleState extends State<RecorderExample> {
 
   // IndexTranscript indextranscript;
   // var directoryName = new IndexTranscript(0, 'dirName');
-  final indextranscript = IndexTranscript(number: 0, dirName: 'dirName');
+  final indextranscript = IndexTranscript(
+      number: new NumberFormat("000"),
+      dirName: 'dirName',
+      fileName: 'fileName'); // initiation
   // >> Form
   TextEditingController usernameField = TextEditingController();
   TextEditingController dialekField = TextEditingController();
@@ -251,9 +255,22 @@ class RecorderExampleState extends State<RecorderExample> {
                       : _jenisKelamin = "m";
                   String _username = usernameField.text;
                   String _dialek = dialekField.text;
+
+                  // String _index = '${}';
+                  // String number = format(count, '0' + digit_space + 'd');
+                  // final formatterIndex = new NumberFormat("000");
+                  final formatterIndex = indextranscript.number;
+                  String _index = formatterIndex.format(1);
+                  // String _index = formatterIndex.format(1);
+                  print(_index);
                   String _dirname =
                       "$_username\_$_jenisKelamin\_$_formattedDate\_$_transcript\_$_dialek\_hp";
+                  String _filename =
+                      "$_username\_$_jenisKelamin\_$_formattedDate\_$_index\_$_transcript\_$_dialek\_hp";
+
+                  // example: rut122_f_20201216_001_audiobuku_yogyakarta_hp
                   print(_dirname);
+                  print(_filename);
                   setState(() {
                     indextranscript.dirName = _dirname;
                   });
