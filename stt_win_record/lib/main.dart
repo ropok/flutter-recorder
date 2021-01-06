@@ -265,14 +265,17 @@ class RecorderExampleState extends State<RecorderExample> {
                   print(_index);
                   String _dirname =
                       "$_username\_$_jenisKelamin\_$_formattedDate\_$_transcript\_$_dialek\_hp";
-                  String _filename =
-                      "$_username\_$_jenisKelamin\_$_formattedDate\_$_index\_$_transcript\_$_dialek\_hp";
+                  String _filename1 =
+                      "$_username\_$_jenisKelamin\_$_formattedDate\_";
+                  String _filename2 = "\_$_transcript\_$_dialek\_hp";
+                  String _filename = "$_filename1\_$_index\_$_filename2";
 
                   // example: rut122_f_20201216_001_audiobuku_yogyakarta_hp
                   print(_dirname);
                   print(_filename);
                   setState(() {
                     indextranscript.dirName = _dirname;
+                    indextranscript.fileName = _filename;
                   });
                   // directoryName.dirName = _dirname;
                   print('b');
@@ -629,6 +632,7 @@ class RecorderPageState extends State<RecorderPage> {
         // print()
         // String customDir = '/test/';
         String customDir = '/${indextranscript.dirName}/';
+        String customFileName = '${indextranscript.fileName}';
         // example: rut122_f_20201216_001_audiobuku_yogyakarta_hp
         // String customFileName =
 
@@ -650,9 +654,11 @@ class RecorderPageState extends State<RecorderPage> {
           print("Directoryexist");
         }
 
-        customDir = directory +
-            customDir +
-            DateTime.now().millisecondsSinceEpoch.toString();
+        // customDir = directory +
+        //     customDir +
+        //     DateTime.now().millisecondsSinceEpoch.toString();
+
+        customDir = directory + customDir + customFileName;
 
         // .wav <---> AudioFormat.WAV
         // .mp4 .m4a .aac <---> AudioFormat.AAC
