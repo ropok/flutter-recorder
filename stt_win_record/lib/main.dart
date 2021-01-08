@@ -24,9 +24,10 @@ class User {
 
 class IndexTranscript {
   IndexTranscript({this.number, this.dirName, this.fileName});
-  final number; // format number 001, 0001, 01, ...
+  int number; // format number 001, 0001, 01, ...
   String dirName; // custom directory name
-  String fileName; // custom file name (dirName + increment index)
+  // String fileName; // custom file name (dirName + increment index)
+  List<String> fileName;
 }
 
 class MyApp extends StatefulWidget {
@@ -63,9 +64,10 @@ class RecorderExampleState extends State<RecorderExample> {
   // IndexTranscript indextranscript;
   // var directoryName = new IndexTranscript(0, 'dirName');
   final indextranscript = IndexTranscript(
-      number: new NumberFormat("000"),
+      // number: new NumberFormat("000"),
+      number: 1,
       dirName: 'dirName',
-      fileName: 'fileName'); // initiation
+      fileName: ['fileName1', 'index', 'fileName2']); // initiation
   // >> Form
   TextEditingController usernameField = TextEditingController();
   TextEditingController dialekField = TextEditingController();
@@ -224,23 +226,29 @@ class RecorderExampleState extends State<RecorderExample> {
                   // String _index = '${}';
                   // String number = format(count, '0' + digit_space + 'd');
                   // final formatterIndex = new NumberFormat("000");
-                  final formatterIndex = indextranscript.number;
-                  String _index = formatterIndex.format(1);
+                  // 1 -> 001
+                  // final formatterIndex = indextranscript.number;
+                  // String _index = formatterIndex.format(1);
+                  int _index = indextranscript.number;
                   // String _index = formatterIndex.format(1);
                   print(_index);
                   String _dirname =
                       "$_username\_$_jenisKelamin\_$_formattedDate\_$_transcript\_$_dialek\_hp";
                   String _filename1 =
-                      "$_username\_$_jenisKelamin\_$_formattedDate";
-                  String _filename2 = "$_transcript\_$_dialek\_hp";
-                  String _filename = "$_filename1\_$_index\_$_filename2";
+                      "$_username\_$_jenisKelamin\_$_formattedDate\_";
+                  String _filename2 = "\_$_transcript\_$_dialek\_hp";
+                  String _filename = "$_filename1$_index$_filename2";
 
                   // example: rut122_f_20201216_001_audiobuku_yogyakarta_hp
                   print(_dirname);
                   print(_filename);
                   setState(() {
                     indextranscript.dirName = _dirname;
-                    indextranscript.fileName = _filename;
+                    indextranscript.fileName = [
+                      _filename1,
+                      _index.toString(),
+                      _filename2
+                    ];
                   });
                   // directoryName.dirName = _dirname;
                   print('b');
@@ -382,6 +390,24 @@ class RecorderPageState extends State<RecorderPage> {
                       ),
                     ],
                   ),
+                  new Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: new FlatButton(
+                          onPressed: onPreviousTranscript, //
+                          child: new Icon(Icons.navigate_before),
+                          color: Colors.lightBlue,
+                        ),
+                      ),
+                      new FlatButton(
+                        onPressed: onNextTranscript, //
+                        child: new Icon(Icons.navigate_next),
+                        color: Colors.lightBlue,
+                      ),
+                    ],
+                  ),
                   new Text("File path of the record: ${_current?.path}"),
                 ]),
           ),
@@ -404,7 +430,7 @@ class RecorderPageState extends State<RecorderPage> {
         // print()
         // String customDir = '/test/';
         String customDir = '/${indextranscript.dirName}/';
-        String customFileName = '${indextranscript.fileName}';
+        String customFileName = '${indextranscript.fileName.join()}';
         // example: rut122_f_20201216_001_audiobuku_yogyakarta_hp
         // String customFileName =
 
@@ -427,16 +453,31 @@ class RecorderPageState extends State<RecorderPage> {
         }
 
         customDir = directory + customDir + customFileName;
-        print("customDir checked");
+
+        // String customDir_wav;
+        // if (customDir != null && customDir.length >= 5) {
+        //   customDir_wav = customDir.substring(0, customDir.length - 5);
+        // }
+        // print(customDir);
+
+        File file = widget.localFileSystem.file(customDir);
+        print(file);
+        if (file.existsSync()) {
+          print("file deleteing");
+          // file.deleteSync(recursive: true);
+
+          print("file deleted");
+        }
+        // print("customDir checked");
         // .wav <---> AudioFormat.WAV
         // .mp4 .m4a .aac <---> AudioFormat.AAC
         // AudioFormat is optional, if given value, will overwrite path extension when there is conflicts.
         _recorder = FlutterAudioRecorder(customDir,
             audioFormat: AudioFormat.WAV, sampleRate: 16000);
-        print("_recorder checked");
+        // print("_recorder checked");
 
         await _recorder.initialized;
-        print("_recorder initialized");
+        // print("_recorder initialized");
         // after initialization
         var current = await _recorder.current(channel: 0);
         print(current);
@@ -538,5 +579,35 @@ class RecorderPageState extends State<RecorderPage> {
   void onPlayAudio() async {
     AudioPlayer audioPlayer = AudioPlayer();
     await audioPlayer.play(_current.path, isLocal: true);
+  }
+
+  void onPreviousTranscript() async {
+    print("before");
+    // 1. if index > 1 then index--
+    if (indextranscript.number > 1) {
+      indextranscript.number--;
+      // 2. filename.update
+      indextranscript.fileName[1] = indextranscript.number.toString();
+      // 3. _init
+      _init();
+    }
+  }
+
+  void onNextTranscript() async {
+    print("next");
+    // 1. if index < max(index) then index++
+    if (indextranscript.number < 255) {
+      // 255 is dummy maximal size
+      indextranscript.number++;
+      // 2. filename.update
+      indextranscript.fileName[1] = indextranscript.number.toString();
+      // 3. _init
+      _init();
+    }
+  }
+
+  void overwriteFile() async {
+    var result = await _recorder.stop();
+    File file = widget.localFileSystem.file(res)
   }
 }
