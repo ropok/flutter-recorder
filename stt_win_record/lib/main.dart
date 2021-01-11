@@ -295,8 +295,9 @@ class RecorderPage extends StatefulWidget {
   final LocalFileSystem localFileSystem;
   // final IndexTranscript directoryName;
   final IndexTranscript indextranscript;
+  final initNumber;
 
-  RecorderPage({localFileSystem, this.indextranscript})
+  RecorderPage({localFileSystem, this.indextranscript, this.initNumber})
       : this.localFileSystem = localFileSystem ?? LocalFileSystem();
 
   @override
@@ -312,6 +313,8 @@ class RecorderPageState extends State<RecorderPage> {
   FlutterAudioRecorder _recorder;
   Recording _current;
   RecordingStatus _currentStatus = RecordingStatus.Unset;
+
+  int _currentIndexTranscript;
 
   // RecorderPageState({Key key, @required this.dirName});
 
@@ -394,11 +397,19 @@ class RecorderPageState extends State<RecorderPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.all(0),
                         child: new FlatButton(
                           onPressed: onPreviousTranscript, //
                           child: new Icon(Icons.navigate_before),
                           color: Colors.lightBlue,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: new FlatButton(
+                          onPressed: onRecordTranscript,
+                          child: new Icon(Icons.fiber_manual_record_outlined),
+                          color: Colors.redAccent,
                         ),
                       ),
                       new FlatButton(
@@ -407,6 +418,10 @@ class RecorderPageState extends State<RecorderPage> {
                         color: Colors.lightBlue,
                       ),
                     ],
+                  ),
+                  new Text(indextranscript.number.toString()),
+                  SizedBox(
+                    width: 8,
                   ),
                   new Text("File path of the record: ${_current?.path}"),
                 ]),
@@ -592,26 +607,34 @@ class RecorderPageState extends State<RecorderPage> {
     print("before");
     // 1. if index > 1 then index--
     if (indextranscript.number > 1) {
-      indextranscript.number--;
-      // 2. filename.update
-      indextranscript.fileName[1] = indextranscript.number.toString();
+      setState(() {
+        indextranscript.number--;
+        // 2. filename.update
+        indextranscript.fileName[1] = indextranscript.number.toString();
+      });
       // 3. if file exist -> delete
       // File file =
       // 3. _init
-      _init();
+      // _init();
     }
+  }
+
+  void onRecordTranscript() async {
+    print("record");
   }
 
   void onNextTranscript() async {
     print("next");
     // 1. if index < max(index) then index++
     if (indextranscript.number < 255) {
-      // 255 is dummy maximal size
-      indextranscript.number++;
-      // 2. filename.update
-      indextranscript.fileName[1] = indextranscript.number.toString();
+      setState(() {
+        // 255 is dummy maximal size
+        indextranscript.number++;
+        // 2. filename.update
+        indextranscript.fileName[1] = indextranscript.number.toString();
+      });
       // 3. _init
-      _init();
+      // _init();
     }
   }
 
