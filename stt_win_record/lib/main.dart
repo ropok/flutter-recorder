@@ -453,24 +453,31 @@ class RecorderPageState extends State<RecorderPage> {
         }
 
         customDir = directory + customDir + customFileName;
-
+        // print('$customDir.wav');
+        String fileName = '$customDir.wav';
+        // print()
         // String customDir_wav;
         // if (customDir != null && customDir.length >= 5) {
         //   customDir_wav = customDir.substring(0, customDir.length - 5);
         // }
         // print(customDir);
+        print('deleting$fileName');
+        deleteFile(fileName);
 
-        File file = widget.localFileSystem.file(customDir);
-        print(file);
-        if (file.existsSync()) {
-          print("file deleteing");
-          // file.deleteSync(recursive: true);
+        // File file = widget.localFileSystem.file(customDir);
+        // File file = io.File(
+        //     '/storage/emulated/0/Android/data/com.example.stt_win_record/files/jaler_f_20210111_audiobuku_jogja_hp/jaler_f_20210111_1_audiobuku_jogja_hp.wav');
+        // print(file);
+        // await file.delete();
+        // if (file.existsSync()) {
+        //   print("file deleteing");
+        //   // file.deleteSync(recursive: true);
 
-          print("file deleted");
-        }
+        //   print("file deleted");
+        // }
         // print("customDir checked");
         // .wav <---> AudioFormat.WAV
-        // .mp4 .m4a .aac <---> AudioFormat.AAC
+        // .mp4 .m4a .aac <---> AudioFormat.AAC`
         // AudioFormat is optional, if given value, will overwrite path extension when there is conflicts.
         _recorder = FlutterAudioRecorder(customDir,
             audioFormat: AudioFormat.WAV, sampleRate: 16000);
@@ -588,6 +595,8 @@ class RecorderPageState extends State<RecorderPage> {
       indextranscript.number--;
       // 2. filename.update
       indextranscript.fileName[1] = indextranscript.number.toString();
+      // 3. if file exist -> delete
+      // File file =
       // 3. _init
       _init();
     }
@@ -606,8 +615,54 @@ class RecorderPageState extends State<RecorderPage> {
     }
   }
 
-  void overwriteFile() async {
-    var result = await _recorder.stop();
-    File file = widget.localFileSystem.file(res)
+  // void overwriteFile() async {
+  //   var result = await _recorder.stop();
+  //   File file = widget.localFileSystem.file(res)
+  // }
+  // Delete File
+  // Future<String> get _localPath async {
+  //   io.Directory directory;
+  //   if (io.Platform.isIOS) {
+  //     final directory = await getApplicationDocumentsDirectory();
+  //   } else {
+  //     final directory = await getExternalStorageDirectory();
+  //   }
+  //   return directory.path;
+  // }
+
+  // Future<File> get _localFile async {
+  //   // final path = await _localPath;
+  //   // print('path ${path}');
+  //   print("localfile");
+  //   return io.File(
+  //       '/storage/emulated/0/Android/data/com.example.stt_win_record/files/jaler_f_20210111_audiobuku_jogja_hp/jaler_f_20210111_1_audiobuku_jogja_hp.wav');
+  // }
+
+  // Future<int> deleteFile() async {
+  //   print("want deletefile");
+  //   try {
+  //     print("deletefile");
+  //     final file = await _localFile;
+
+  //     await file.delete();
+  //   } catch (e) {
+  //     return 0;
+  //   }
+  // }
+
+  Future<void> deleteFile(String fileName) async {
+    try {
+      // var file = io.File(
+      // '/storage/emulated/0/Android/data/com.example.stt_win_record/files/jaler_f_20210111_audiobuku_jogja_hp/jaler_f_20210111_1_audiobuku_jogja_hp.wav');
+      var file = io.File(fileName);
+      if (await file.exists()) {
+        // file exists, it is safe to call delete on it
+        await file.delete();
+      }
+    } catch (e) {
+      // error in getting access to the file
+    }
   }
+
+  // Future<int>
 }
