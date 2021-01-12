@@ -343,6 +343,16 @@ class RecorderPageState extends State<RecorderPage> {
                     children: <Widget>[
                       Padding(
                         padding: const EdgeInsets.all(8.0),
+                        child: new Text('${indextranscript.fileName.join()}'),
+                      ),
+                      new Text(indextranscript.number.toString()),
+                    ],
+                  ),
+                  new Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
                         child: new FlatButton(
                           onPressed: () {
                             switch (_currentStatus) {
@@ -419,7 +429,6 @@ class RecorderPageState extends State<RecorderPage> {
                       ),
                     ],
                   ),
-                  new Text(indextranscript.number.toString()),
                   SizedBox(
                     width: 8,
                   ),
