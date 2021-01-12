@@ -313,8 +313,7 @@ class RecorderPageState extends State<RecorderPage> {
   FlutterAudioRecorder _recorder;
   Recording _current;
   RecordingStatus _currentStatus = RecordingStatus.Unset;
-
-  int _currentIndexTranscript;
+  bool recordPressed = false;
 
   // RecorderPageState({Key key, @required this.dirName});
 
@@ -324,7 +323,7 @@ class RecorderPageState extends State<RecorderPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _init();
+    // _init();
   }
 
   @override
@@ -415,11 +414,40 @@ class RecorderPageState extends State<RecorderPage> {
                         ),
                       ),
                       Padding(
+                        // RECORD button
                         padding: const EdgeInsets.all(8.0),
                         child: new FlatButton(
-                          onPressed: onRecordTranscript,
-                          child: new Icon(Icons.fiber_manual_record_outlined),
-                          color: Colors.redAccent,
+                          onPressed: () {
+                            switch (_currentStatus) {
+                              case RecordingStatus.Unset:
+                                {
+                                  onRecordTranscript();
+                                  recordPressed = true;
+                                  break;
+                                }
+                              case RecordingStatus.Recording:
+                                {
+                                  recordPressed = false;
+                                  _stop();
+                                  break;
+                                }
+                              case RecordingStatus.Stopped:
+                                {
+                                  onRecordTranscript();
+                                  recordPressed = true;
+                                  break;
+                                }
+                              default:
+                                break;
+                            }
+                          },
+                          // child: new Icon(Icons.fiber_manual_record_outlined),
+                          // color: Colors.redAccent,
+                          child: recordPressed
+                              ? new Icon(Icons.stop_outlined)
+                              : new Icon(Icons.stop_circle),
+                          color:
+                              recordPressed ? Colors.white70 : Colors.redAccent,
                         ),
                       ),
                       new FlatButton(
@@ -478,15 +506,15 @@ class RecorderPageState extends State<RecorderPage> {
 
         customDir = directory + customDir + customFileName;
         // print('$customDir.wav');
-        String fileName = '$customDir.wav';
         // print()
         // String customDir_wav;
         // if (customDir != null && customDir.length >= 5) {
         //   customDir_wav = customDir.substring(0, customDir.length - 5);
         // }
         // print(customDir);
+        String fileName = '$customDir.wav';
         print('deleting$fileName');
-        deleteFile(fileName);
+        await deleteFile(fileName);
 
         // File file = widget.localFileSystem.file(customDir);
         // File file = io.File(
@@ -616,6 +644,7 @@ class RecorderPageState extends State<RecorderPage> {
     print("before");
     // 1. if index > 1 then index--
     if (indextranscript.number > 1) {
+      _stop();
       setState(() {
         indextranscript.number--;
         // 2. filename.update
@@ -630,12 +659,15 @@ class RecorderPageState extends State<RecorderPage> {
 
   void onRecordTranscript() async {
     print("record");
+    await _init();
+    await _start();
   }
 
   void onNextTranscript() async {
     print("next");
     // 1. if index < max(index) then index++
     if (indextranscript.number < 255) {
+      _stop();
       setState(() {
         // 255 is dummy maximal size
         indextranscript.number++;
