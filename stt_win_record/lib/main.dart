@@ -395,7 +395,7 @@ class RecorderPageState extends State<RecorderPage> {
                         width: 8,
                       ),
                       new FlatButton(
-                        onPressed: onPlayAudio,
+                        onPressed: onCheckPlayAudio,
                         child: new Text("Play",
                             style: TextStyle(color: Colors.white)),
                         color: Colors.blueAccent.withOpacity(0.5),
@@ -457,10 +457,6 @@ class RecorderPageState extends State<RecorderPage> {
                       ),
                     ],
                   ),
-                  SizedBox(
-                    width: 8,
-                  ),
-                  new Text("File path of the record: ${_current?.path}"),
                 ]),
           ),
         ),
@@ -513,7 +509,7 @@ class RecorderPageState extends State<RecorderPage> {
         // }
         // print(customDir);
         String fileName = '$customDir.wav';
-        print('deleting$fileName');
+        print('deleting $fileName');
         await deleteFile(fileName);
 
         // File file = widget.localFileSystem.file(customDir);
@@ -679,40 +675,34 @@ class RecorderPageState extends State<RecorderPage> {
     }
   }
 
-  // void overwriteFile() async {
-  //   var result = await _recorder.stop();
-  //   File file = widget.localFileSystem.file(res)
-  // }
-  // Delete File
-  // Future<String> get _localPath async {
-  //   io.Directory directory;
-  //   if (io.Platform.isIOS) {
-  //     final directory = await getApplicationDocumentsDirectory();
-  //   } else {
-  //     final directory = await getExternalStorageDirectory();
-  //   }
-  //   return directory.path;
-  // }
+  void onCheckPlayAudio() async {
+    AudioPlayer audioPlayer = AudioPlayer();
+    String customDir = '/${indextranscript.dirName}/';
+    String customFileName = '${indextranscript.fileName.join()}';
+    io.Directory appDocDirectory;
+    if (io.Platform.isIOS) {
+      appDocDirectory = await getApplicationDocumentsDirectory();
+    } else {
+      appDocDirectory = await getExternalStorageDirectory();
+    }
+    //create Variable
+    String directory = appDocDirectory.path;
 
-  // Future<File> get _localFile async {
-  //   // final path = await _localPath;
-  //   // print('path ${path}');
-  //   print("localfile");
-  //   return io.File(
-  //       '/storage/emulated/0/Android/data/com.example.stt_win_record/files/jaler_f_20210111_audiobuku_jogja_hp/jaler_f_20210111_1_audiobuku_jogja_hp.wav');
-  // }
+    customDir = directory + customDir + customFileName;
 
-  // Future<int> deleteFile() async {
-  //   print("want deletefile");
-  //   try {
-  //     print("deletefile");
-  //     final file = await _localFile;
-
-  //     await file.delete();
-  //   } catch (e) {
-  //     return 0;
-  //   }
-  // }
+    try {
+      // var file = io.File(
+      // '/storage/emulated/0/Android/data/com.example.stt_win_record/files/jaler_f_20210111_audiobuku_jogja_hp/jaler_f_20210111_1_audiobuku_jogja_hp.wav');
+      var file = io.File('$customDir.wav');
+      String fileName = '$customDir.wav';
+      if (await file.exists()) {
+        // file exists, it is safe to call play on it
+        await audioPlayer.play(fileName, isLocal: true);
+      }
+    } catch (e) {
+      // error in getting access to the file
+    }
+  }
 
   Future<void> deleteFile(String fileName) async {
     try {
