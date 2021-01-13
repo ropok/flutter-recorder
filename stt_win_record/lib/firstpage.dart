@@ -10,8 +10,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
-import 'package:stt_win_record/data/user.dart';
-import 'package:stt_win_record/main.dart';
+import 'package:sttwinrecorder/data/user.dart';
+import 'package:sttwinrecorder/main.dart';
 
 void main() {
   // SystemChrome.setEnabledSystemUIOverlays([]);

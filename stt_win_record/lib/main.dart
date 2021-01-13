@@ -10,7 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
-import 'package:stt_win_record/firstpage.dart';
+// import 'package:stt_win_record/firstpage.dart';
 
 void main() {
   // SystemChrome.setEnabledSystemUIOverlays([]);
@@ -332,9 +332,9 @@ class RecorderPageState extends State<RecorderPage> {
       home: new Scaffold(
         body: SafeArea(
           child: new Padding(
-            padding: new EdgeInsets.all(8.0),
+            padding: new EdgeInsets.all(1.0),
             child: new Column(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   // new Text("Status : $_currentStatus"),
                   new Row(
@@ -344,64 +344,64 @@ class RecorderPageState extends State<RecorderPage> {
                         padding: const EdgeInsets.all(8.0),
                         child: new Text('${indextranscript.fileName.join()}'),
                       ),
-                      new Text(indextranscript.number.toString()),
+                      // new Text(indextranscript.number.toString()),
                     ],
                   ),
-                  new Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: new FlatButton(
-                          onPressed: () {
-                            switch (_currentStatus) {
-                              case RecordingStatus.Initialized:
-                                {
-                                  _start();
-                                  break;
-                                }
-                              case RecordingStatus.Recording:
-                                {
-                                  _pause();
-                                  break;
-                                }
-                              case RecordingStatus.Paused:
-                                {
-                                  _resume();
-                                  break;
-                                }
-                              case RecordingStatus.Stopped:
-                                {
-                                  _init();
-                                  break;
-                                }
-                              default:
-                                break;
-                            }
-                          },
-                          child: _buildText(_currentStatus),
-                          color: Colors.lightBlue,
-                        ),
-                      ),
-                      new FlatButton(
-                        onPressed: _currentStatus != RecordingStatus.Unset
-                            ? _stop
-                            : null,
-                        child: new Text("Stop",
-                            style: TextStyle(color: Colors.white)),
-                        color: Colors.blueAccent.withOpacity(0.5),
-                      ),
-                      SizedBox(
-                        width: 8,
-                      ),
-                      new FlatButton(
-                        onPressed: onCheckPlayAudio,
-                        child: new Text("Play",
-                            style: TextStyle(color: Colors.white)),
-                        color: Colors.blueAccent.withOpacity(0.5),
-                      ),
-                    ],
-                  ),
+                  // new Row(
+                  //   mainAxisAlignment: MainAxisAlignment.center,
+                  //   children: <Widget>[
+                  //     Padding(
+                  //       padding: const EdgeInsets.all(8.0),
+                  //       child: new FlatButton(
+                  //         onPressed: () {
+                  //           switch (_currentStatus) {
+                  //             case RecordingStatus.Initialized:
+                  //               {
+                  //                 _start();
+                  //                 break;
+                  //               }
+                  //             case RecordingStatus.Recording:
+                  //               {
+                  //                 _pause();
+                  //                 break;
+                  //               }
+                  //             case RecordingStatus.Paused:
+                  //               {
+                  //                 _resume();
+                  //                 break;
+                  //               }
+                  //             case RecordingStatus.Stopped:
+                  //               {
+                  //                 _init();
+                  //                 break;
+                  //               }
+                  //             default:
+                  //               break;
+                  //           }
+                  //         },
+                  //         child: _buildText(_currentStatus),
+                  //         color: Colors.lightBlue,
+                  //       ),
+                  //     ),
+                  //     new FlatButton(
+                  //       onPressed: _currentStatus != RecordingStatus.Unset
+                  //           ? _stop
+                  //           : null,
+                  //       child: new Text("Stop",
+                  //           style: TextStyle(color: Colors.white)),
+                  //       color: Colors.blueAccent.withOpacity(0.5),
+                  //     ),
+                  //     SizedBox(
+                  //       width: 8,
+                  //     ),
+                  //     new FlatButton(
+                  //       onPressed: onCheckPlayAudio,
+                  //       child: new Text("Play",
+                  //           style: TextStyle(color: Colors.white)),
+                  //       color: Colors.blueAccent.withOpacity(0.5),
+                  //     ),
+                  //   ],
+                  // ),
                   new Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
@@ -444,10 +444,17 @@ class RecorderPageState extends State<RecorderPage> {
                           // child: new Icon(Icons.fiber_manual_record_outlined),
                           // color: Colors.redAccent,
                           child: recordPressed
-                              ? new Icon(Icons.stop_outlined)
-                              : new Icon(Icons.stop_circle),
-                          color:
-                              recordPressed ? Colors.white70 : Colors.redAccent,
+                              ? new Icon(
+                                  Icons.stop_outlined,
+                                  size: 50.0,
+                                )
+                              : new Icon(
+                                  Icons.stop_circle,
+                                  color: Colors.redAccent,
+                                  size: 50.0,
+                                ),
+                          // color:
+                          //     recordPressed ? Colors.white38 : Colors.white38,
                         ),
                       ),
                       new FlatButton(
@@ -456,6 +463,12 @@ class RecorderPageState extends State<RecorderPage> {
                         color: Colors.lightBlue,
                       ),
                     ],
+                  ),
+                  new FlatButton(
+                    onPressed: onCheckPlayAudio, //
+                    child: new Text("Play",
+                        style: TextStyle(color: Colors.black54)),
+                    color: Colors.lightGreen[100],
                   ),
                 ]),
           ),

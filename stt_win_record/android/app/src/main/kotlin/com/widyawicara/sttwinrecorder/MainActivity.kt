@@ -1,4 +1,4 @@
-package com.example.stt_win_record
+package com.widyawicara.sttwinrecorder
 
 import io.flutter.embedding.android.FlutterActivity
 
