@@ -1,1 +1,7 @@
 *.code-workspace
+# Ignore everything
+*
+
+# But not these files and subdirectorices...
+!*/
+!*/stt_win_record/lib/
