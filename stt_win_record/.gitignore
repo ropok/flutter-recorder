@@ -50,5 +50,4 @@ app.*.map.json
 *
 
 # But not these files and subdirectorices...
-!*/
-!*/stt_win_record/lib/
+!*/lib/
