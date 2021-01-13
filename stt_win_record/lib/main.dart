@@ -40,6 +40,9 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return new MaterialApp(
       home: new Scaffold(
+        appBar: AppBar(
+            title: Text("STT WIN Recorder"),
+            backgroundColor: Color.fromARGB(255, 39, 169, 225)),
         body: SafeArea(
           child: new RecorderExample(),
         ),
@@ -79,191 +82,193 @@ class RecorderExampleState extends State<RecorderExample> {
   Widget build(BuildContext context) {
     return new Center(
       child: new Padding(
-        padding: new EdgeInsets.all(8.0),
-        child: new Column(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              SizedBox(height: 0.0),
-              // Text Box Username
-              SizedBox(height: 20.0),
-              TextField(
-                controller: usernameField,
-                style: TextStyle(
-                  fontSize: 24,
-                  color: Colors.black,
-                ),
-                decoration: InputDecoration(
-                  labelText: 'username',
-                  icon: Icon(Icons.supervisor_account),
-                  hintText: '6 digit username. contoh: jal098',
-                  helperText: 'contoh: jal098',
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-              // >> Dropdown Jenis Kelamin
-              SizedBox(height: 20.0),
-              DropdownButtonFormField<User>(
-                  value: jenisKelaminUser,
-                  items: users
-                      .map((User user) => DropdownMenuItem(
-                            value: user,
-                            child: new Text(
-                              user.name,
-                            ),
-                          ))
-                      .toList(),
-                  // hint: Text('Jenis Kelamin'),
-                  onChanged: (User newValue) {
-                    setState(() {
-                      jenisKelaminUser = newValue;
-                    });
-                  },
+        padding: new EdgeInsets.all(24.0),
+        child: SingleChildScrollView(
+          child: new Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                SizedBox(height: 0.0),
+                // Text Box Username
+                SizedBox(height: 20.0),
+                TextField(
+                  controller: usernameField,
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 18,
                     color: Colors.black,
                   ),
                   decoration: InputDecoration(
-                    labelText: 'jenis kelamin',
-                    icon: Icon(Icons.wc),
+                    labelText: 'username',
+                    icon: Icon(Icons.supervisor_account),
+                    hintText: '6 digit username. contoh: jal098',
+                    helperText: 'contoh: jal098',
                     border: const OutlineInputBorder(),
-                  )),
-              // >> Dropdown Jenis Kelamin
-              // Text Box Dialek
-              SizedBox(height: 20.0),
-              TextField(
-                controller: dialekField,
-                style: TextStyle(
-                  fontSize: 24,
-                  color: Colors.black,
+                  ),
                 ),
-                decoration: InputDecoration(
-                  labelText: 'dialek',
-                  icon: Icon(Icons.record_voice_over),
-                  hintText: '',
-                  helperText: '',
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-              // >> Dropdown transcript
-              SizedBox(height: 20.0),
-              DropdownButtonFormField<String>(
-                  value: _transcript,
-                  items: [
-                    "audiobuku",
-                    "ayatalkitab1",
-                    "dongeng",
-                    "dongengwidya",
-                    "faqislami1",
-                    "kontenfaq",
-                    "kontenislami1",
-                    "kumpulanistilah01",
-                    "kumpulanistilah02",
-                    "kumpulanistilah03",
-                    "kumpulanistilah04",
-                    "kumpulanistilah05",
-                    "kumpulanistilah06",
-                    "kumpulanistilah07",
-                    "kumpulanistilah08",
-                    "kumpulanistilah09",
-                    "kumpulanistilah10",
-                    "matematika1",
-                    "mvpsmalltalk",
-                    "olahragawidya1",
-                    "quran2",
-                    "radio",
-                    "radio2",
-                    "reading",
-                    "resep",
-                    "surahalquran",
-                    "transfitur",
-                    "warungwidya",
-                    "wilayah1",
-                    "wilayah2"
-                  ]
-                      .map((label) => DropdownMenuItem(
-                            child: Text(label.toString()),
-                            value: label,
-                          ))
-                      .toList(),
-                  hint: Text('Text Transcript'),
-                  onChanged: (String value) {
-                    setState(() {
-                      _transcript = value;
-                    });
-                  },
+                // >> Dropdown Jenis Kelamin
+                SizedBox(height: 20.0),
+                DropdownButtonFormField<User>(
+                    value: jenisKelaminUser,
+                    items: users
+                        .map((User user) => DropdownMenuItem(
+                              value: user,
+                              child: new Text(
+                                user.name,
+                              ),
+                            ))
+                        .toList(),
+                    // hint: Text('Jenis Kelamin'),
+                    onChanged: (User newValue) {
+                      setState(() {
+                        jenisKelaminUser = newValue;
+                      });
+                    },
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.black,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'jenis kelamin',
+                      icon: Icon(Icons.wc),
+                      border: const OutlineInputBorder(),
+                    )),
+                // >> Dropdown Jenis Kelamin
+                // Text Box Dialek
+                SizedBox(height: 20.0),
+                TextField(
+                  controller: dialekField,
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 18,
                     color: Colors.black,
                   ),
                   decoration: InputDecoration(
-                    labelText: 'text transcript',
-                    icon: Icon(Icons.sticky_note_2),
+                    labelText: 'dialek',
+                    icon: Icon(Icons.record_voice_over),
+                    hintText: '',
+                    helperText: '',
                     border: const OutlineInputBorder(),
-                  )),
-              // >> Dropdown Jenis Kelamin
-              SizedBox(height: 10.0),
-              RaisedButton(
-                child: Text(
-                  'SUBMIT',
-                  style: TextStyle(fontSize: 24),
+                  ),
                 ),
-                onPressed: () {
-                  print("a");
-                  // _getDirName;
+                // >> Dropdown transcript
+                SizedBox(height: 10.0),
+                DropdownButtonFormField<String>(
+                    value: _transcript,
+                    items: [
+                      "audiobuku",
+                      "ayatalkitab1",
+                      "dongeng",
+                      "dongengwidya",
+                      "faqislami1",
+                      "kontenfaq",
+                      "kontenislami1",
+                      "kumpulanistilah01",
+                      "kumpulanistilah02",
+                      "kumpulanistilah03",
+                      "kumpulanistilah04",
+                      "kumpulanistilah05",
+                      "kumpulanistilah06",
+                      "kumpulanistilah07",
+                      "kumpulanistilah08",
+                      "kumpulanistilah09",
+                      "kumpulanistilah10",
+                      "matematika1",
+                      "mvpsmalltalk",
+                      "olahragawidya1",
+                      "quran2",
+                      "radio",
+                      "radio2",
+                      "reading",
+                      "resep",
+                      "surahalquran",
+                      "transfitur",
+                      "warungwidya",
+                      "wilayah1",
+                      "wilayah2"
+                    ]
+                        .map((label) => DropdownMenuItem(
+                              child: Text(label.toString()),
+                              value: label,
+                            ))
+                        .toList(),
+                    hint: Text('Text Transcript'),
+                    onChanged: (String value) {
+                      setState(() {
+                        _transcript = value;
+                      });
+                    },
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.black,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'text transcript',
+                      icon: Icon(Icons.sticky_note_2),
+                      border: const OutlineInputBorder(),
+                    )),
+                // >> Dropdown Jenis Kelamin
+                SizedBox(height: 10.0),
+                RaisedButton(
+                  child: Text(
+                    'SUBMIT',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  onPressed: () {
+                    print("a");
+                    // _getDirName;
 
-                  var now = new DateTime.now();
-                  var formatter = new DateFormat('yyyyMMdd');
-                  String _formattedDate = formatter.format(now);
-                  String _jenisKelamin;
-                  // // ganti kode jenis kelamin
-                  // String jenisKelamin =
-                  jenisKelaminUser.name == "Perempuan"
-                      ? _jenisKelamin = "f"
-                      : _jenisKelamin = "m";
-                  String _username = usernameField.text;
-                  String _dialek = dialekField.text;
+                    var now = new DateTime.now();
+                    var formatter = new DateFormat('yyyyMMdd');
+                    String _formattedDate = formatter.format(now);
+                    String _jenisKelamin;
+                    // // ganti kode jenis kelamin
+                    // String jenisKelamin =
+                    jenisKelaminUser.name == "Perempuan"
+                        ? _jenisKelamin = "f"
+                        : _jenisKelamin = "m";
+                    String _username = usernameField.text;
+                    String _dialek = dialekField.text;
 
-                  // String _index = '${}';
-                  // String number = format(count, '0' + digit_space + 'd');
-                  // final formatterIndex = new NumberFormat("000");
-                  // 1 -> 001
-                  // final formatterIndex = indextranscript.number;
-                  // String _index = formatterIndex.format(1);
-                  int _index = indextranscript.number;
-                  // String _index = formatterIndex.format(1);
-                  print(_index);
-                  String _dirname =
-                      "$_username\_$_jenisKelamin\_$_formattedDate\_$_transcript\_$_dialek\_hp";
-                  String _filename1 =
-                      "$_username\_$_jenisKelamin\_$_formattedDate\_";
-                  String _filename2 = "\_$_transcript\_$_dialek\_hp";
-                  String _filename = "$_filename1$_index$_filename2";
+                    // String _index = '${}';
+                    // String number = format(count, '0' + digit_space + 'd');
+                    // final formatterIndex = new NumberFormat("000");
+                    // 1 -> 001
+                    // final formatterIndex = indextranscript.number;
+                    // String _index = formatterIndex.format(1);
+                    int _index = indextranscript.number;
+                    // String _index = formatterIndex.format(1);
+                    print(_index);
+                    String _dirname =
+                        "$_username\_$_jenisKelamin\_$_formattedDate\_$_transcript\_$_dialek\_hp";
+                    String _filename1 =
+                        "$_username\_$_jenisKelamin\_$_formattedDate\_";
+                    String _filename2 = "\_$_transcript\_$_dialek\_hp";
+                    String _filename = "$_filename1$_index$_filename2";
 
-                  // example: rut122_f_20201216_001_audiobuku_yogyakarta_hp
-                  print(_dirname);
-                  print(_filename);
-                  setState(() {
-                    indextranscript.dirName = _dirname;
-                    indextranscript.fileName = [
-                      _filename1,
-                      _index.toString(),
-                      _filename2
-                    ];
-                  });
-                  // directoryName.dirName = _dirname;
-                  print('b');
-                  print(indextranscript.dirName);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            RecorderPage(indextranscript: indextranscript)),
-                    // RecorderPage(
-                    //     dir_name: new IndexTranscript(0, _dirname))),
-                  );
-                },
-              ),
-            ]),
+                    // example: rut122_f_20201216_001_audiobuku_yogyakarta_hp
+                    print(_dirname);
+                    print(_filename);
+                    setState(() {
+                      indextranscript.dirName = _dirname;
+                      indextranscript.fileName = [
+                        _filename1,
+                        _index.toString(),
+                        _filename2
+                      ];
+                    });
+                    // directoryName.dirName = _dirname;
+                    print('b');
+                    print(indextranscript.dirName);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              RecorderPage(indextranscript: indextranscript)),
+                      // RecorderPage(
+                      //     dir_name: new IndexTranscript(0, _dirname))),
+                    );
+                  },
+                ),
+              ]),
+        ),
       ),
     );
   }
