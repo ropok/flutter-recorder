@@ -10,7 +10,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
-// import 'package:stt_win_record/firstpage.dart';
+
+import 'package:csv/csv.dart';
+import 'dart:async' show Future;
+import 'package:flutter/services.dart' show rootBundle;
 
 void main() {
   // SystemChrome.setEnabledSystemUIOverlays([]);
@@ -64,6 +67,17 @@ class RecorderExampleState extends State<RecorderExample> {
   User jenisKelaminUser;
   List<User> users = <User>[User('Perempuan'), User('Laki-laki')];
 
+  // >> CSV Read
+  List<List<dynamic>> data = [];
+
+  loadAsset() async {
+    final myData = await rootBundle.loadString("assets/dongengwidya.csv");
+    List<List<dynamic>> csvTable = CsvToListConverter().convert(myData);
+    print(csvTable);
+    data = csvTable;
+    setState(() {});
+  }
+
   // IndexTranscript indextranscript;
   // var directoryName = new IndexTranscript(0, 'dirName');
   final indextranscript = IndexTranscript(
@@ -87,6 +101,34 @@ class RecorderExampleState extends State<RecorderExample> {
           child: new Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
+                Table(
+                  columnWidths: {
+                    0: FixedColumnWidth(100.0),
+                    1: FixedColumnWidth(200.0),
+                  },
+                  border: TableBorder.all(width: 1.0),
+                  children: data.map((item) {
+                    return TableRow(
+                        children: item.map((row) {
+                      return Container(
+                        color: row.toString().contains("NA")
+                            ? Colors.redAccent
+                            : Colors.greenAccent,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            row.toString(),
+                            style: TextStyle(fontSize: 20.0),
+                          ),
+                        ),
+                      );
+                    }).toList());
+                  }).toList(),
+                ),
+
+                RaisedButton(onPressed: () async {
+                  await loadAsset();
+                }),
                 SizedBox(height: 0.0),
                 // Text Box Username
                 SizedBox(height: 20.0),
@@ -211,8 +253,7 @@ class RecorderExampleState extends State<RecorderExample> {
                     'SUBMIT',
                     style: TextStyle(fontSize: 18),
                   ),
-                  onPressed: () {
-                    print("a");
+                  onPressed: () async {
                     // _getDirName;
 
                     var now = new DateTime.now();
