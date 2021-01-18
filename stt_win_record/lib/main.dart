@@ -26,11 +26,13 @@ class User {
 }
 
 class IndexTranscript {
-  IndexTranscript({this.number, this.dirName, this.fileName});
+  IndexTranscript(
+      {this.number, this.dirName, this.fileName, this.transcriptTitle});
   int number; // format number 001, 0001, 01, ...
   String dirName; // custom directory name
   // String fileName; // custom file name (dirName + increment index)
   List<String> fileName;
+  String transcriptTitle;
 }
 
 class MyApp extends StatefulWidget {
@@ -71,7 +73,7 @@ class RecorderExampleState extends State<RecorderExample> {
   // List<List<dynamic>> data = [];
 
   Future<List<String>> loadAsset() async {
-    var myData = await rootBundle.loadString("assets/dongengwidya.csv");
+    var myData = await rootBundle.loadString("assets/quran2.csv");
     List<List<dynamic>> csvTable = CsvToListConverter().convert(myData);
     // print(csvTable[0]);
     // List<List<dynamic>> csvTable_data = CsvToListConverter(
@@ -99,7 +101,8 @@ class RecorderExampleState extends State<RecorderExample> {
       // number: new NumberFormat("000"),
       number: 1,
       dirName: 'dirName',
-      fileName: ['fileName1', 'index', 'fileName2']); // initiation
+      fileName: ['fileName1', 'index', 'fileName2'],
+      transcriptTitle: 'audiobuku.csv'); // initiation
   // >> Form
   TextEditingController usernameField = TextEditingController();
   TextEditingController dialekField = TextEditingController();
@@ -127,7 +130,7 @@ class RecorderExampleState extends State<RecorderExample> {
                       } else {
                         // ListView.builder(itemBuilder: itemBuilder)
                         print(snapshot.data.length);
-                        return Center(child: Text(snapshot.data[21]));
+                        return Center(child: Text(snapshot.data[98]));
                         // return ListView.builder(
                         //     itemCount: snapshot.data.length,
                         //     itemBuilder: (BuildContext context, int index) {
@@ -308,6 +311,9 @@ class RecorderExampleState extends State<RecorderExample> {
                     // 1 -> 001
                     // final formatterIndex = indextranscript.number;
                     // String _index = formatterIndex.format(1);
+                    setState(() {
+                      indextranscript.number = 1;
+                    });
                     int _index = indextranscript.number;
                     // String _index = formatterIndex.format(1);
                     print(_index);
@@ -328,6 +334,7 @@ class RecorderExampleState extends State<RecorderExample> {
                         _index.toString(),
                         _filename2
                       ];
+                      indextranscript.transcriptTitle = "$_transcript.csv";
                     });
                     // directoryName.dirName = _dirname;
                     print('b');
@@ -394,15 +401,30 @@ class RecorderPageState extends State<RecorderPage> {
   Recording _current;
   RecordingStatus _currentStatus = RecordingStatus.Unset;
   bool recordPressed = false;
+  double transcript_length;
 
   // RecorderPageState({Key key, @required this.dirName});
 
   // RecorderPageState({this.directoryName});
+  Future<List<String>> loadAsset() async {
+    var myData = await rootBundle
+        .loadString("assets/${indextranscript.transcriptTitle}");
+    List<List<dynamic>> csvTable = CsvToListConverter().convert(myData);
+    List<String> data = [];
+    csvTable[0].forEach((value) {
+      data.add(value.toString());
+    });
+    // print(data.length.toInt());
+    transcript_length = (data.length - 3) / 2;
+    // print(transcript_length.toInt());
+    return data;
+  }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    // loadAsset();
     // _init();
   }
 
@@ -417,6 +439,21 @@ class RecorderPageState extends State<RecorderPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   // new Text("Status : $_currentStatus"),
+                  FutureBuilder(
+                      future: loadAsset(),
+                      builder: (BuildContext context, AsyncSnapshot snapshot) {
+                        // this condition is important
+                        if (snapshot.data == null) {
+                          return Center(
+                            child: Text('loading data'),
+                          );
+                        } else {
+                          return Center(
+                              // karena newline tidak terbaca sebagai split
+                              child: Text(snapshot
+                                  .data[(indextranscript.number * 2) + 1]));
+                        }
+                      }),
                   new Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
@@ -755,10 +792,9 @@ class RecorderPageState extends State<RecorderPage> {
   void onNextTranscript() async {
     print("next");
     // 1. if index < max(index) then index++
-    if (indextranscript.number < 255) {
+    if (indextranscript.number < transcript_length.toInt()) {
       _stop();
       setState(() {
-        // 255 is dummy maximal size
         indextranscript.number++;
         // 2. filename.update
         indextranscript.fileName[1] = indextranscript.number.toString();
