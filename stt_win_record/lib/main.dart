@@ -13,7 +13,7 @@ import 'package:path/path.dart';
 
 import 'package:csv/csv.dart';
 import 'dart:async' show Future;
-import 'package:flutter/services.dart' show rootBundle;
+// import 'package:flutter/services.dart' show rootBundle;
 
 void main() {
   // SystemChrome.setEnabledSystemUIOverlays([]);
@@ -67,16 +67,31 @@ class RecorderExampleState extends State<RecorderExample> {
   User jenisKelaminUser;
   List<User> users = <User>[User('Perempuan'), User('Laki-laki')];
 
-  // >> CSV Read
-  List<List<dynamic>> data = [];
+  // // >> CSV Read
+  // List<List<dynamic>> data = [];
 
-  loadAsset() async {
-    final myData = await rootBundle.loadString("assets/dongengwidya.csv");
+  Future<List<String>> loadAsset() async {
+    var myData = await rootBundle.loadString("assets/dongengwidya.csv");
     List<List<dynamic>> csvTable = CsvToListConverter().convert(myData);
-    print(csvTable);
-    data = csvTable;
-    setState(() {});
+    // print(csvTable[0]);
+    // List<List<dynamic>> csvTable_data = CsvToListConverter(
+    //   fieldDelimiter: ',',
+    // ).convert(csvTable);
+    //
+    List<String> data = [];
+    csvTable[0].forEach((value) {
+      data.add(value.toString());
+    });
+    return data;
   }
+
+  // loadAsset() async {
+  //   final myData = await rootBundle.loadString("assets/dongengwidya.csv");
+  //   List<List<dynamic>> csvTable = CsvToListConverter().convert(myData);
+  //   print(csvTable);
+  //   data = csvTable;
+  //   setState(() {});
+  // }
 
   // IndexTranscript indextranscript;
   // var directoryName = new IndexTranscript(0, 'dirName');
@@ -101,34 +116,53 @@ class RecorderExampleState extends State<RecorderExample> {
           child: new Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Table(
-                  columnWidths: {
-                    0: FixedColumnWidth(100.0),
-                    1: FixedColumnWidth(200.0),
-                  },
-                  border: TableBorder.all(width: 1.0),
-                  children: data.map((item) {
-                    return TableRow(
-                        children: item.map((row) {
-                      return Container(
-                        color: row.toString().contains("NA")
-                            ? Colors.redAccent
-                            : Colors.greenAccent,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            row.toString(),
-                            style: TextStyle(fontSize: 20.0),
-                          ),
-                        ),
-                      );
-                    }).toList());
-                  }).toList(),
-                ),
+                FutureBuilder(
+                    future: loadAsset(),
+                    builder: (BuildContext context, AsyncSnapshot snapshot) {
+                      // this condition is important
+                      if (snapshot.data == null) {
+                        return Center(
+                          child: Text('loading data'),
+                        );
+                      } else {
+                        // ListView.builder(itemBuilder: itemBuilder)
+                        print(snapshot.data.length);
+                        return Center(child: Text(snapshot.data[21]));
+                        // return ListView.builder(
+                        //     itemCount: snapshot.data.length,
+                        //     itemBuilder: (BuildContext context, int index) {
+                        //       return Center(child: Text(snapshot.data[index]));
+                        //     });
+                      }
+                    }),
+                // Table(
+                //   columnWidths: {
+                //     0: FixedColumnWidth(100.0),
+                //     1: FixedColumnWidth(200.0),
+                //   },
+                //   border: TableBorder.all(width: 1.0),
+                //   children: data.map((item) {
+                //     return TableRow(
+                //         children: item.map((row) {
+                //       return Container(
+                //         color: row.toString().contains("NA")
+                //             ? Colors.redAccent
+                //             : Colors.greenAccent,
+                //         child: Padding(
+                //           padding: const EdgeInsets.all(8.0),
+                //           child: Text(
+                //             row.toString(),
+                //             style: TextStyle(fontSize: 20.0),
+                //           ),
+                //         ),
+                //       );
+                //     }).toList());
+                //   }).toList(),
+                // ),
 
-                RaisedButton(onPressed: () async {
-                  await loadAsset();
-                }),
+                // RaisedButton(onPressed: () async {
+                //   await loadAsset();
+                // }),
                 SizedBox(height: 0.0),
                 // Text Box Username
                 SizedBox(height: 20.0),
