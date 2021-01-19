@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io' as io;
 
+import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:file/file.dart';
@@ -72,20 +73,20 @@ class RecorderExampleState extends State<RecorderExample> {
   // // >> CSV Read
   // List<List<dynamic>> data = [];
 
-  Future<List<String>> loadAsset() async {
-    var myData = await rootBundle.loadString("assets/quran2.csv");
-    List<List<dynamic>> csvTable = CsvToListConverter().convert(myData);
-    // print(csvTable[0]);
-    // List<List<dynamic>> csvTable_data = CsvToListConverter(
-    //   fieldDelimiter: ',',
-    // ).convert(csvTable);
-    //
-    List<String> data = [];
-    csvTable[0].forEach((value) {
-      data.add(value.toString());
-    });
-    return data;
-  }
+  // Future<List<String>> loadAsset() async {
+  //   var myData = await rootBundle.loadString("assets/quran2.csv");
+  //   List<List<dynamic>> csvTable = CsvToListConverter().convert(myData);
+  //   // print(csvTable[0]);
+  //   // List<List<dynamic>> csvTable_data = CsvToListConverter(
+  //   //   fieldDelimiter: ',',
+  //   // ).convert(csvTable);
+  //   //
+  //   List<String> data = [];
+  //   csvTable[0].forEach((value) {
+  //     data.add(value.toString());
+  //   });
+  //   return data;
+  // }
 
   // loadAsset() async {
   //   final myData = await rootBundle.loadString("assets/dongengwidya.csv");
@@ -119,25 +120,25 @@ class RecorderExampleState extends State<RecorderExample> {
           child: new Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                FutureBuilder(
-                    future: loadAsset(),
-                    builder: (BuildContext context, AsyncSnapshot snapshot) {
-                      // this condition is important
-                      if (snapshot.data == null) {
-                        return Center(
-                          child: Text('loading data'),
-                        );
-                      } else {
-                        // ListView.builder(itemBuilder: itemBuilder)
-                        print(snapshot.data.length);
-                        return Center(child: Text(snapshot.data[98]));
-                        // return ListView.builder(
-                        //     itemCount: snapshot.data.length,
-                        //     itemBuilder: (BuildContext context, int index) {
-                        //       return Center(child: Text(snapshot.data[index]));
-                        //     });
-                      }
-                    }),
+                // FutureBuilder(
+                //     future: loadAsset(),
+                //     builder: (BuildContext context, AsyncSnapshot snapshot) {
+                //       // this condition is important
+                //       if (snapshot.data == null) {
+                //         return Center(
+                //           child: Text('loading data'),
+                //         );
+                //       } else {
+                //         // ListView.builder(itemBuilder: itemBuilder)
+                //         print(snapshot.data.length);
+                //         return Center(child: Text(snapshot.data[98]));
+                //         // return ListView.builder(
+                //         //     itemCount: snapshot.data.length,
+                //         //     itemBuilder: (BuildContext context, int index) {
+                //         //       return Center(child: Text(snapshot.data[index]));
+                //         //     });
+                //       }
+                //     }),
                 // Table(
                 //   columnWidths: {
                 //     0: FixedColumnWidth(100.0),
@@ -334,7 +335,7 @@ class RecorderExampleState extends State<RecorderExample> {
                         _index.toString(),
                         _filename2
                       ];
-                      indextranscript.transcriptTitle = "$_transcript.csv";
+                      indextranscript.transcriptTitle = "$_transcript";
                     });
                     // directoryName.dirName = _dirname;
                     print('b');
@@ -408,7 +409,7 @@ class RecorderPageState extends State<RecorderPage> {
   // RecorderPageState({this.directoryName});
   Future<List<String>> loadAsset() async {
     var myData = await rootBundle
-        .loadString("assets/${indextranscript.transcriptTitle}");
+        .loadString("assets/${indextranscript.transcriptTitle}.csv");
     List<List<dynamic>> csvTable = CsvToListConverter().convert(myData);
     List<String> data = [];
     csvTable[0].forEach((value) {
@@ -545,7 +546,7 @@ class RecorderPageState extends State<RecorderPage> {
                               case RecordingStatus.Recording:
                                 {
                                   recordPressed = false;
-                                  _stop();
+                                  onNextTranscript();
                                   break;
                                 }
                               case RecordingStatus.Stopped:
@@ -801,6 +802,17 @@ class RecorderPageState extends State<RecorderPage> {
       });
       // 3. _init
       // _init();
+    } else {
+      _stop();
+      doneDialog();
+      // showDialog(
+      //     context: this.context,
+      //     builder: (BuildContext context) {
+      //       return AlertDialog(
+      //         title: Text("Alert Dialog"),
+      //         content: Text("Dialog Content"),
+      //       );
+      //     });
     }
   }
 
@@ -831,6 +843,50 @@ class RecorderPageState extends State<RecorderPage> {
     } catch (e) {
       // error in getting access to the file
     }
+  }
+
+  Future<void> doneDialog() async {
+    return showDialog<void>(
+      context: this.context,
+      barrierDismissible: false, //user must ap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('SELESAI!'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                    'Transcript ${indextranscript.transcriptTitle} telah selesai.'),
+                Text('Klik "Ganti Transcript" untuk ganti transcript'),
+                Text('atau "kembali" untuk menutup dialog ini'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('kembali'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Ganti Transcript'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.pop(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          RecorderPage(indextranscript: indextranscript)),
+                  // RecorderPage(
+                  //     dir_name: new IndexTranscript(0, _dirname))),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> deleteFile(String fileName) async {
