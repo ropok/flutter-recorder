@@ -28,8 +28,10 @@ class User {
 }
 
 class zipTranscript {
-  zipTranscript({this.zipDir});
+  zipTranscript({this.storeDir, this.zipDir, this.zipName});
+  String storeDir;
   String zipDir;
+  String zipName;
 }
 
 class IndexTranscript {
@@ -404,7 +406,9 @@ class RecorderPageState extends State<RecorderPage> {
   // IndexTranscript dir_name;
 
   final ziptranscript = zipTranscript(
+    storeDir: "source_directory_zip",
     zipDir: "destination_directory_zip",
+    zipName: "directory.zip",
   );
   IndexTranscript indextranscript;
   RecorderPageState(this.indextranscript);
@@ -656,7 +660,9 @@ class RecorderPageState extends State<RecorderPage> {
         }
 
         setState(() {
-          ziptranscript.zipDir = directory + customDir;
+          ziptranscript.storeDir = directory + customDir;
+          ziptranscript.zipDir = directory;
+          ziptranscript.zipName = customDir.substring(0, customDir.length - 1);
         });
         print('${ziptranscript.zipDir} good');
 
@@ -982,9 +988,9 @@ class _zipPageState extends State<zipPage> {
 
   Future<io.File> _testZip() async {
     print("_appDataDir=" + ziptranscript.zipDir);
-    final storeDir = io.Directory(ziptranscript.zipDir);
+    final storeDir = io.Directory(ziptranscript.storeDir);
 
-    final zipFile = _createZipFile("testZip.zip");
+    final zipFile = _createZipFile("${ziptranscript.zipName}.zip");
     print("Writing to zip file: " + zipFile.path);
 
     try {
