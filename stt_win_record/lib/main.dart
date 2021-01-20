@@ -987,10 +987,14 @@ class _zipPageState extends State<zipPage> {
   }
 
   Future<io.File> _testZip() async {
+    var now = new DateTime.now();
+    var formatter = new DateFormat('yyyyMMdd_HHmmss');
+    String _formattedDate = formatter.format(now);
     print("_appDataDir=" + ziptranscript.zipDir);
     final storeDir = io.Directory(ziptranscript.storeDir);
 
-    final zipFile = _createZipFile("${ziptranscript.zipName}.zip");
+    final zipFile =
+        _createZipFile("${ziptranscript.zipName}_$_formattedDate.zip");
     print("Writing to zip file: " + zipFile.path);
 
     try {
