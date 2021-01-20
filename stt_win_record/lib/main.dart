@@ -14,6 +14,7 @@ import 'package:path/path.dart';
 
 import 'package:csv/csv.dart';
 import 'dart:async' show Future;
+import 'package:flutter_archive/flutter_archive.dart';
 // import 'package:flutter/services.dart' show rootBundle;
 
 void main() {
@@ -24,6 +25,11 @@ void main() {
 class User {
   const User(this.name);
   final String name;
+}
+
+class zipTranscript {
+  zipTranscript({this.zipDir});
+  String zipDir;
 }
 
 class IndexTranscript {
@@ -396,6 +402,10 @@ class RecorderPage extends StatefulWidget {
 class RecorderPageState extends State<RecorderPage> {
   // final IndexTranscript directoryName;
   // IndexTranscript dir_name;
+
+  final ziptranscript = zipTranscript(
+    zipDir: "destination_directory_zip",
+  );
   IndexTranscript indextranscript;
   RecorderPageState(this.indextranscript);
   FlutterAudioRecorder _recorder;
@@ -588,6 +598,20 @@ class RecorderPageState extends State<RecorderPage> {
                         style: TextStyle(color: Colors.black54)),
                     color: Colors.lightGreen[100],
                   ),
+                  new FlatButton(
+                    onPressed: () async {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                zipPage(ziptranscript: ziptranscript)),
+                        // RecorderPage(
+                        //     dir_name: new IndexTranscript(0, _dirname))),
+                      );
+                    },
+                    child: new Text("Zipping"),
+                    color: Colors.blueAccent,
+                  ),
                 ]),
           ),
         ),
@@ -630,6 +654,11 @@ class RecorderPageState extends State<RecorderPage> {
         } else {
           print("Directoryexist");
         }
+
+        setState(() {
+          ziptranscript.zipDir = directory + customDir;
+        });
+        print('${ziptranscript.zipDir} good');
 
         customDir = directory + customDir + customFileName;
         // print('$customDir.wav');
@@ -905,3 +934,76 @@ class RecorderPageState extends State<RecorderPage> {
 
   // Future<int>
 }
+
+class zipPage extends StatefulWidget {
+  final zipTranscript ziptranscript;
+  zipPage({this.ziptranscript});
+  @override
+  _zipPageState createState() => new _zipPageState(ziptranscript);
+}
+
+class _zipPageState extends State<zipPage> {
+  zipTranscript ziptranscript;
+  _zipPageState(this.ziptranscript);
+  @override
+  Widget build(BuildContext context) {
+    return new MaterialApp(
+      home: new Scaffold(
+        body: SafeArea(
+          child: new Padding(
+            padding: new EdgeInsets.all(1.0),
+            child: new Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                new Text("Zipping"),
+                new RaisedButton(child: Text("Test"), onPressed: () => _test()),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future _test() async {
+    await _testZip();
+  }
+
+  io.File _createZipFile(String fileName) {
+    final zipFilePath = ziptranscript.zipDir + "/" + fileName;
+    final zipFile = io.File(zipFilePath);
+
+    if (zipFile.existsSync()) {
+      print("Deleting existing zip file: " + zipFile.path);
+      zipFile.deleteSync();
+    }
+    return zipFile;
+  }
+
+  Future<io.File> _testZip() async {
+    print("_appDataDir=" + ziptranscript.zipDir);
+    final storeDir = io.Directory(ziptranscript.zipDir);
+
+    final zipFile = _createZipFile("testZip.zip");
+    print("Writing to zip file: " + zipFile.path);
+
+    try {
+      await ZipFile.createFromDirectory(
+          sourceDir: storeDir, zipFile: zipFile, recurseSubDirs: true);
+    } on PlatformException catch (e) {
+      print(e);
+    }
+    return zipFile;
+  }
+
+  // void zippingDir() async {
+  //   final dataDir = Directory(indextranscript.dirName);
+  //   try {
+  //     final zipFile = File("zip_zap_zap");
+  //     ZipFile.createFromDirectory(
+  //         sourceDir: dataDir, zipFile: zipFile, recureSubDirs: true);
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  // }
+} // class-state
