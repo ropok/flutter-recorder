@@ -28,10 +28,11 @@ class User {
 }
 
 class zipTranscript {
-  zipTranscript({this.storeDir, this.zipDir, this.zipName});
+  zipTranscript({this.storeDir, this.zipDir, this.zipName, this.zipDateTime});
   String storeDir;
   String zipDir;
   String zipName;
+  String zipDateTime;
 }
 
 class IndexTranscript {
@@ -112,6 +113,7 @@ class RecorderExampleState extends State<RecorderExample> {
       dirName: 'dirName',
       fileName: ['fileName1', 'index', 'fileName2'],
       transcriptTitle: 'audiobuku.csv'); // initiation
+
   // >> Form
   TextEditingController usernameField = TextEditingController();
   TextEditingController dialekField = TextEditingController();
@@ -405,11 +407,6 @@ class RecorderPageState extends State<RecorderPage> {
   // final IndexTranscript directoryName;
   // IndexTranscript dir_name;
 
-  final ziptranscript = zipTranscript(
-    storeDir: "source_directory_zip",
-    zipDir: "destination_directory_zip",
-    zipName: "directory.zip",
-  );
   IndexTranscript indextranscript;
   RecorderPageState(this.indextranscript);
   FlutterAudioRecorder _recorder;
@@ -417,6 +414,13 @@ class RecorderPageState extends State<RecorderPage> {
   RecordingStatus _currentStatus = RecordingStatus.Unset;
   bool recordPressed = false;
   double transcript_length;
+
+  final ziptranscript = zipTranscript(
+    storeDir: "source_directory_zip",
+    zipDir: "destination_directory_zip",
+    zipName: "directory.zip",
+    zipDateTime: "yyyyMMdd_HHmmss",
+  );
 
   // RecorderPageState({Key key, @required this.dirName});
 
@@ -439,6 +443,7 @@ class RecorderPageState extends State<RecorderPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    _zipFilename();
     // loadAsset();
     // _init();
   }
@@ -539,8 +544,12 @@ class RecorderPageState extends State<RecorderPage> {
                     children: <Widget>[
                       Padding(
                         padding: const EdgeInsets.all(0),
+                        //>>PREVIOUS BUTTON
                         child: new FlatButton(
-                          onPressed: onPreviousTranscript, //
+                          onPressed: () {
+                            onPreviousTranscript();
+                            recordPressed = false;
+                          }, //
                           child: new Icon(Icons.navigate_before),
                           color: Colors.lightBlue,
                         ),
@@ -560,7 +569,7 @@ class RecorderPageState extends State<RecorderPage> {
                               case RecordingStatus.Recording:
                                 {
                                   recordPressed = false;
-                                  onNextTranscript();
+                                  onNextTranscript(); // auto next after stop pressed
                                   break;
                                 }
                               case RecordingStatus.Stopped:
@@ -590,7 +599,10 @@ class RecorderPageState extends State<RecorderPage> {
                         ),
                       ),
                       new FlatButton(
-                        onPressed: onNextTranscript, //
+                        onPressed: () {
+                          onNextTranscript();
+                          recordPressed = false;
+                        }, //
                         child: new Icon(Icons.navigate_next),
                         color: Colors.lightBlue,
                       ),
@@ -623,6 +635,16 @@ class RecorderPageState extends State<RecorderPage> {
     );
     // return new Center(
     // );
+  }
+
+  _zipFilename() async {
+    var nowTime = new DateTime.now();
+    var formatterZip = new DateFormat('yyyyMMdd_HHmmss');
+    String _formattedDate = formatterZip.format(nowTime);
+
+    setState(() {
+      ziptranscript.zipDateTime = _formattedDate;
+    });
   }
 
   _init() async {
@@ -766,6 +788,7 @@ class RecorderPageState extends State<RecorderPage> {
       _current = result;
       _currentStatus = _current.status;
     });
+    _zipping();
   }
 
   Widget _buildText(RecordingStatus status) {
@@ -938,7 +961,37 @@ class RecorderPageState extends State<RecorderPage> {
     }
   }
 
-  // Future<int>
+  Future _zipping() async {
+    await _testZip();
+  }
+
+  io.File _createZipFile(String fileName) {
+    final zipFilePath = ziptranscript.zipDir + "/" + fileName;
+    final zipFile = io.File(zipFilePath);
+
+    if (zipFile.existsSync()) {
+      print("Deleting existing zip file: " + zipFile.path);
+      zipFile.deleteSync();
+    }
+    return zipFile;
+  }
+
+  Future<io.File> _testZip() async {
+    print("_appDataDir=" + ziptranscript.zipDir);
+    final storeDir = io.Directory(ziptranscript.storeDir);
+
+    final zipFile = _createZipFile(
+        "${ziptranscript.zipName}_${ziptranscript.zipDateTime}.zip");
+    print("Writing to zip file: " + zipFile.path);
+
+    try {
+      await ZipFile.createFromDirectory(
+          sourceDir: storeDir, zipFile: zipFile, recurseSubDirs: true);
+    } on PlatformException catch (e) {
+      print(e);
+    }
+    return zipFile;
+  }
 }
 
 class zipPage extends StatefulWidget {
