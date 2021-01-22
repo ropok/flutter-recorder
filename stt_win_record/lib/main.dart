@@ -120,6 +120,26 @@ class RecorderExampleState extends State<RecorderExample> {
   TextEditingController jenisKelaminField = TextEditingController();
   // String _jenisKelamin = "Perempuan";
   String _transcript = "audiobuku";
+  String directory;
+  List file;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _listFiles();
+    // print(file.length);
+  }
+
+  // * listfiles
+  void _listFiles() async {
+    directory = (await getApplicationDocumentsDirectory()).path;
+    print(directory);
+    setState(() {
+      file = io.Directory('$directory').listSync();
+    });
+    print(file);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -130,53 +150,6 @@ class RecorderExampleState extends State<RecorderExample> {
           child: new Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                // FutureBuilder(
-                //     future: loadAsset(),
-                //     builder: (BuildContext context, AsyncSnapshot snapshot) {
-                //       // this condition is important
-                //       if (snapshot.data == null) {
-                //         return Center(
-                //           child: Text('loading data'),
-                //         );
-                //       } else {
-                //         // ListView.builder(itemBuilder: itemBuilder)
-                //         print(snapshot.data.length);
-                //         return Center(child: Text(snapshot.data[98]));
-                //         // return ListView.builder(
-                //         //     itemCount: snapshot.data.length,
-                //         //     itemBuilder: (BuildContext context, int index) {
-                //         //       return Center(child: Text(snapshot.data[index]));
-                //         //     });
-                //       }
-                //     }),
-                // Table(
-                //   columnWidths: {
-                //     0: FixedColumnWidth(100.0),
-                //     1: FixedColumnWidth(200.0),
-                //   },
-                //   border: TableBorder.all(width: 1.0),
-                //   children: data.map((item) {
-                //     return TableRow(
-                //         children: item.map((row) {
-                //       return Container(
-                //         color: row.toString().contains("NA")
-                //             ? Colors.redAccent
-                //             : Colors.greenAccent,
-                //         child: Padding(
-                //           padding: const EdgeInsets.all(8.0),
-                //           child: Text(
-                //             row.toString(),
-                //             style: TextStyle(fontSize: 20.0),
-                //           ),
-                //         ),
-                //       );
-                //     }).toList());
-                //   }).toList(),
-                // ),
-
-                // RaisedButton(onPressed: () async {
-                //   await loadAsset();
-                // }),
                 SizedBox(height: 0.0),
                 // Text Box Username
                 SizedBox(height: 20.0),
@@ -308,7 +281,7 @@ class RecorderExampleState extends State<RecorderExample> {
                     var formatter = new DateFormat('yyyyMMdd');
                     String _formattedDate = formatter.format(now);
                     String _jenisKelamin;
-                    // // ganti kode jenis kelamin
+                    // * ganti kode jenis kelamin
                     // String jenisKelamin =
                     jenisKelaminUser.name == "Perempuan"
                         ? _jenisKelamin = "f"
@@ -391,7 +364,6 @@ class RecorderExampleState extends State<RecorderExample> {
 
 class RecorderPage extends StatefulWidget {
   final LocalFileSystem localFileSystem;
-  // final IndexTranscript directoryName;
   final IndexTranscript indextranscript;
   final initNumber;
 
@@ -399,21 +371,30 @@ class RecorderPage extends StatefulWidget {
       : this.localFileSystem = localFileSystem ?? LocalFileSystem();
 
   @override
-  // State<StatefulWidget> createState() => new RecorderPageState();
   RecorderPageState createState() => new RecorderPageState(indextranscript);
 }
 
 class RecorderPageState extends State<RecorderPage> {
-  // final IndexTranscript directoryName;
-  // IndexTranscript dir_name;
-
   IndexTranscript indextranscript;
   RecorderPageState(this.indextranscript);
   FlutterAudioRecorder _recorder;
   Recording _current;
   RecordingStatus _currentStatus = RecordingStatus.Unset;
-  bool recordPressed = false;
+  // bool recordPressed = false;
   double transcript_length;
+
+  // * indikator record
+  bool _isRecordMode;
+  bool _isWaitMode;
+  bool _isButtonDisabled;
+  int _stateRecord;
+
+  List colorIndicator = [
+    Colors.grey,
+    Colors.redAccent,
+    Colors.greenAccent,
+    Colors.redAccent
+  ];
 
   final ziptranscript = zipTranscript(
     storeDir: "source_directory_zip",
@@ -444,8 +425,11 @@ class RecorderPageState extends State<RecorderPage> {
     // TODO: implement initState
     super.initState();
     _zipFilename();
-    // loadAsset();
-    // _init();
+    // * record mode: state 1
+    _isRecordMode = false;
+    _isWaitMode = false;
+    _isButtonDisabled = false;
+    _stateRecord = 0;
   }
 
   @override
@@ -484,150 +468,113 @@ class RecorderPageState extends State<RecorderPage> {
                       // new Text(indextranscript.number.toString()),
                     ],
                   ),
-                  // new Row(
-                  //   mainAxisAlignment: MainAxisAlignment.center,
-                  //   children: <Widget>[
-                  //     Padding(
-                  //       padding: const EdgeInsets.all(8.0),
-                  //       child: new FlatButton(
-                  //         onPressed: () {
-                  //           switch (_currentStatus) {
-                  //             case RecordingStatus.Initialized:
-                  //               {
-                  //                 _start();
-                  //                 break;
-                  //               }
-                  //             case RecordingStatus.Recording:
-                  //               {
-                  //                 _pause();
-                  //                 break;
-                  //               }
-                  //             case RecordingStatus.Paused:
-                  //               {
-                  //                 _resume();
-                  //                 break;
-                  //               }
-                  //             case RecordingStatus.Stopped:
-                  //               {
-                  //                 _init();
-                  //                 break;
-                  //               }
-                  //             default:
-                  //               break;
-                  //           }
-                  //         },
-                  //         child: _buildText(_currentStatus),
-                  //         color: Colors.lightBlue,
-                  //       ),
-                  //     ),
-                  //     new FlatButton(
-                  //       onPressed: _currentStatus != RecordingStatus.Unset
-                  //           ? _stop
-                  //           : null,
-                  //       child: new Text("Stop",
-                  //           style: TextStyle(color: Colors.white)),
-                  //       color: Colors.blueAccent.withOpacity(0.5),
-                  //     ),
-                  //     SizedBox(
-                  //       width: 8,
-                  //     ),
-                  //     new FlatButton(
-                  //       onPressed: onCheckPlayAudio,
-                  //       child: new Text("Play",
-                  //           style: TextStyle(color: Colors.white)),
-                  //       color: Colors.blueAccent.withOpacity(0.5),
-                  //     ),
-                  //   ],
-                  // ),
+                  // * Indikator bar
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: SizedBox(
+                        width: MediaQuery.of(context).size.width * 1,
+                        height: MediaQuery.of(context).size.height * 0.02,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: colorIndicator[_stateRecord],
+                          ),
+                        )),
+                  ),
+                  // new SizedBox(child: c,olor: Colors.grey),
                   new Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Padding(
                         padding: const EdgeInsets.all(0),
-                        //>>PREVIOUS BUTTON
+                        // * PREVIOUS BUTTON
                         child: new FlatButton(
-                          onPressed: () {
-                            onPreviousTranscript();
-                            recordPressed = false;
-                          }, //
+                          onPressed: _stateRecord == 0
+                              ? () {
+                                  onPreviousTranscript();
+                                }
+                              : null, //
                           child: new Icon(Icons.navigate_before),
-                          color: Colors.lightBlue,
+                          color: _stateRecord == 0
+                              ? Colors.lightBlue
+                              : Colors.blueGrey,
                         ),
                       ),
                       Padding(
                         // RECORD button
                         padding: const EdgeInsets.all(8.0),
                         child: new FlatButton(
-                          onPressed: () {
-                            switch (_currentStatus) {
-                              case RecordingStatus.Unset:
-                                {
-                                  onRecordTranscript();
-                                  recordPressed = true;
-                                  break;
-                                }
-                              case RecordingStatus.Recording:
-                                {
-                                  recordPressed = false;
-                                  onNextTranscript(); // auto next after stop pressed
-                                  break;
-                                }
-                              case RecordingStatus.Stopped:
-                                {
-                                  onRecordTranscript();
-                                  recordPressed = true;
-                                  break;
-                                }
-                              default:
-                                break;
-                            }
-                          },
+                          onPressed: _isButtonDisabled
+                              ? null
+                              : () {
+                                  switch (_currentStatus) {
+                                    case RecordingStatus.Unset:
+                                      {
+                                        onRecordTranscript();
+                                        // recordPressed = true;
+                                        break;
+                                      }
+                                    case RecordingStatus.Recording:
+                                      {
+                                        _stop();
+                                        // recordPressed = false;
+                                        break;
+                                      }
+                                    case RecordingStatus.Stopped:
+                                      {
+                                        onRecordTranscript();
+                                        // recordPressed = true;
+                                        break;
+                                      }
+                                    default:
+                                      break;
+                                  }
+                                },
                           // child: new Icon(Icons.fiber_manual_record_outlined),
                           // color: Colors.redAccent,
-                          child: recordPressed
+                          child: _stateRecord == 0
                               ? new Icon(
-                                  Icons.stop_outlined,
-                                  size: 50.0,
-                                )
-                              : new Icon(
                                   Icons.stop_circle,
                                   color: Colors.redAccent,
                                   size: 50.0,
+                                )
+                              : new Icon(
+                                  Icons.stop_outlined,
+                                  size: 50.0,
                                 ),
+                          // child: recordPressed
+                          //     ? new Icon(
+                          //         Icons.stop_outlined,
+                          //         size: 50.0,
+                          //       )
+                          //     : new Icon(
+                          //         Icons.stop_circle,
+                          //         color: Colors.redAccent,
+                          //         size: 50.0,
+                          //       ),
                           // color:
                           //     recordPressed ? Colors.white38 : Colors.white38,
                         ),
-                      ),
+                      ), //
+                      // * Next Transcript
                       new FlatButton(
-                        onPressed: () {
-                          onNextTranscript();
-                          recordPressed = false;
-                        }, //
+                        onPressed: _stateRecord == 0
+                            ? () {
+                                onNextTranscript();
+                              }
+                            : null, //
                         child: new Icon(Icons.navigate_next),
-                        color: Colors.lightBlue,
+                        color: _stateRecord == 0
+                            ? Colors.lightBlue
+                            : Colors.blueGrey,
                       ),
                     ],
                   ),
-                  new FlatButton(
-                    onPressed: onCheckPlayAudio, //
-                    child: new Text("Play",
-                        style: TextStyle(color: Colors.black54)),
-                    color: Colors.lightGreen[100],
-                  ),
-                  new FlatButton(
-                    onPressed: () async {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                zipPage(ziptranscript: ziptranscript)),
-                        // RecorderPage(
-                        //     dir_name: new IndexTranscript(0, _dirname))),
-                      );
-                    },
-                    child: new Text("Zipping"),
-                    color: Colors.blueAccent,
-                  ),
+                  // new FlatButton(
+                  //   onPressed: onCheckPlayAudio, //
+                  //   child: new Text("Play",
+                  //       style: TextStyle(color: Colors.black54)),
+                  //   color: Colors.lightGreen[100],
+                  // ),
                 ]),
           ),
         ),
@@ -658,7 +605,8 @@ class RecorderPageState extends State<RecorderPage> {
         // print()
         // print()
         // String customDir = '/test/';
-        String customDir = '/${indextranscript.dirName}/';
+        String customDir =
+            '/${indextranscript.dirName}_${ziptranscript.zipDateTime}/';
         String customFileName = '${indextranscript.fileName.join()}';
         // example: rut122_f_20201216_001_audiobuku_yogyakarta_hp
         // String customFileName =
@@ -684,9 +632,13 @@ class RecorderPageState extends State<RecorderPage> {
         setState(() {
           ziptranscript.storeDir = directory + customDir;
           ziptranscript.zipDir = directory;
-          ziptranscript.zipName = customDir.substring(0, customDir.length - 1);
+          ziptranscript.zipName = customDir.substring(
+              0, customDir.length - 1); // hilangin "/" di belakang
         });
-        print('${ziptranscript.zipDir} good');
+        print('${ziptranscript.storeDir} good');
+        String dirFile = ziptranscript.storeDir;
+        List file = io.Directory('$dirFile').listSync();
+        print(file.length);
 
         customDir = directory + customDir + customFileName;
         // print('$customDir.wav');
@@ -778,7 +730,8 @@ class RecorderPageState extends State<RecorderPage> {
     setState(() {});
   }
 
-  _stop() async {
+  _stopRecord() async {
+    // ! timer stop
     var result = await _recorder.stop();
     print("Stop recording: ${result.path}");
     print("Stop recording: ${result.duration}");
@@ -789,6 +742,33 @@ class RecorderPageState extends State<RecorderPage> {
       _currentStatus = _current.status;
     });
     _zipping();
+  }
+
+  _stop() async {
+    Timer _timer;
+    int _start = 1;
+    setState(() {
+      _stateRecord = 3;
+      _isButtonDisabled = true;
+    });
+    const oneSec = const Duration(seconds: 1);
+    _timer = new Timer.periodic(oneSec, (Timer timer) {
+      if (_start == 0) {
+        // * times up here
+        setState(() {
+          timer.cancel();
+          _stopRecord();
+          // * 1->2 atau 3->0
+          _stateRecord == 1 ? _stateRecord = 2 : _stateRecord = 0;
+          _isButtonDisabled = false; // * button kembali aktif
+          onNextTranscript(); // * auto next after stop pressed
+        });
+      } else {
+        setState(() {
+          _start--;
+        });
+      }
+    });
   }
 
   Widget _buildText(RecordingStatus status) {
@@ -829,7 +809,7 @@ class RecorderPageState extends State<RecorderPage> {
     print("before");
     // 1. if index > 1 then index--
     if (indextranscript.number > 1) {
-      _stop();
+      // _stop();
       setState(() {
         indextranscript.number--;
         // 2. filename.update
@@ -844,15 +824,42 @@ class RecorderPageState extends State<RecorderPage> {
 
   void onRecordTranscript() async {
     print("record");
+    _stateRecord = 1;
+    _isButtonDisabled = true;
     await _init();
     await _start();
+    // ! use timer here
+    countDownTimer_start(1);
+    // print(_current?.duration.inMinutes.toString());
+    // _current?.duration.inMilliseconds >= 3000 ? print("A") : print("B");
+    // print(_current?.duration.toString());
+  }
+
+  countDownTimer_start(int _start) {
+    Timer _timer;
+    const oneSec = const Duration(seconds: 1);
+    _timer = new Timer.periodic(oneSec, (Timer timer) {
+      if (_start == 0) {
+        // * times up here
+        setState(() {
+          timer.cancel();
+          // * 1->2 atau 3->0
+          _stateRecord == 1 ? _stateRecord = 2 : _stateRecord = 0;
+          _isButtonDisabled = false; // * button kembali aktif
+        });
+      } else {
+        setState(() {
+          _start--;
+        });
+      }
+    });
   }
 
   void onNextTranscript() async {
     print("next");
     // 1. if index < max(index) then index++
     if (indextranscript.number < transcript_length.toInt()) {
-      _stop();
+      // _stop();
       setState(() {
         indextranscript.number++;
         // 2. filename.update
@@ -861,7 +868,7 @@ class RecorderPageState extends State<RecorderPage> {
       // 3. _init
       // _init();
     } else {
-      _stop();
+      // _stop();
       doneDialog();
       // showDialog(
       //     context: this.context,
