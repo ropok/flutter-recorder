@@ -440,6 +440,7 @@ class RecorderPageState extends State<RecorderPage> {
     // TODO: implement initState
     super.initState();
     _zipFilename();
+    print('test');
     _countDirs();
     // * record mode: state 1
     _isRecordMode = false;
@@ -784,7 +785,7 @@ class RecorderPageState extends State<RecorderPage> {
     String directory = appDocDirectory.path;
 
     List<io.FileSystemEntity> dirList = io.Directory('$directory').listSync();
-    print('countDirs: $dirList');
+    // print('countDirs: $dirList');
     dirList.forEach((value) {
       String fileName = basename(value.path);
       List<String> filename = fileName.split('_');
@@ -792,37 +793,30 @@ class RecorderPageState extends State<RecorderPage> {
       if (!(fileName.endsWith('.zip')) &&
           filename[0] == indextranscript.userName &&
           filename[3] == indextranscript.transcriptTitle) {
-        print("fileName: $fileName");
+        // print("fileName: $fileName");
         dirNameList.add(fileName);
       }
-      // fileName.endsWith('.zip') && fileName.startsWith('jaler')
-      //     ? null
-      //     : print("fileName: $fileName");
-      // if (fileName.endsWith('.zip')) {
-      //   pass;
-      // }
-      // print("fileName: $fileName");
+
+      setState(() {
+        ziptranscript.zipDir = directory;
+      });
     });
   }
 
   Future<String> _countFiles() async {
-    // await _countDirs();
-    dirFile = ziptranscript.storeDir;
-    fileList = io.Directory('$dirFile').listSync();
-    print('countfiles: $fileList');
-    // fileList.forEach((value) {
-    //   fileNameList.add(value.toString().split('/') as String);
-    //   fileNameList = fileNameList.toSet().toList(); // * remove duplicates
-    //   // value.toString().split('/');
-    // });
-    fileList.forEach((value) {
-      var pieces = value.toString().split('/');
-      var piece = pieces[pieces.length - 1];
-      fileNameList.add(piece);
-      // fileNameList.add(value.toString().split('/') as String);
-      // fileNameList = fileNameList.toSet().toList(); // * remove duplicates
-      // value.toString().split('/');
-    });
+    // _countDirs();
+    for (String dirname in dirNameList) {
+      dirFile = "${ziptranscript.zipDir}/$dirname";
+      print("reading $dirFile");
+      fileList = io.Directory('$dirFile').listSync();
+      print('filelist(1): $fileList');
+      fileList.forEach((value) {
+        String fileName = basename(value.path);
+        fileNameList.add(fileName);
+      });
+      print('filelist(2): $fileList');
+    }
+
     fileNameList = fileNameList.toSet().toList();
     print(fileNameList);
     String data = fileNameList.length.toString();
@@ -840,14 +834,16 @@ class RecorderPageState extends State<RecorderPage> {
     _timer = new Timer.periodic(oneSec, (Timer timer) {
       if (_start == 0) {
         // * times up here
+        timer.cancel();
+        _stopRecord();
         setState(() {
-          timer.cancel();
-          _stopRecord();
           // * 1->2 atau 3->0
           _stateRecord == 1 ? _stateRecord = 2 : _stateRecord = 0;
           _isButtonDisabled = false; // * button kembali aktif
-          onNextTranscript(); // * auto next after stop pressed
         });
+        _countDirs();
+        onNextTranscript(); // * auto next after stop pressed
+
       } else {
         setState(() {
           _start--;
@@ -1072,8 +1068,7 @@ class RecorderPageState extends State<RecorderPage> {
     print("_appDataDir=" + ziptranscript.zipDir);
     final storeDir = io.Directory(ziptranscript.storeDir);
 
-    final zipFile = _createZipFile(
-        "${ziptranscript.zipName}_${ziptranscript.zipDateTime}.zip");
+    final zipFile = _createZipFile("${ziptranscript.zipName}.zip");
     print("Writing to zip file: " + zipFile.path);
 
     try {
