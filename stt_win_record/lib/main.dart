@@ -15,7 +15,6 @@ import 'package:path/path.dart';
 import 'package:csv/csv.dart';
 import 'dart:async' show Future;
 import 'package:flutter_archive/flutter_archive.dart';
-// import 'package:flutter/services.dart' show rootBundle;
 
 void main() {
   // SystemChrome.setEnabledSystemUIOverlays([]);
@@ -37,12 +36,17 @@ class zipTranscript {
 
 class IndexTranscript {
   IndexTranscript(
-      {this.number, this.dirName, this.fileName, this.transcriptTitle});
+      {this.number,
+      this.dirName,
+      this.fileName,
+      this.transcriptTitle,
+      this.userName});
   int number; // format number 001, 0001, 01, ...
   String dirName; // custom directory name
   // String fileName; // custom file name (dirName + increment index)
   List<String> fileName;
   String transcriptTitle;
+  String userName;
 }
 
 class MyApp extends StatefulWidget {
@@ -112,7 +116,8 @@ class RecorderExampleState extends State<RecorderExample> {
       number: 1,
       dirName: 'dirName',
       fileName: ['fileName1', 'index', 'fileName2'],
-      transcriptTitle: 'audiobuku.csv'); // initiation
+      transcriptTitle: 'audiobuku.csv',
+      userName: 'user000'); // initiation
 
   // >> Form
   TextEditingController usernameField = TextEditingController();
@@ -319,6 +324,7 @@ class RecorderExampleState extends State<RecorderExample> {
                         _filename2
                       ];
                       indextranscript.transcriptTitle = "$_transcript";
+                      indextranscript.userName = "$_username";
                     });
                     // directoryName.dirName = _dirname;
                     print('b');
@@ -381,7 +387,16 @@ class RecorderPageState extends State<RecorderPage> {
   Recording _current;
   RecordingStatus _currentStatus = RecordingStatus.Unset;
   // bool recordPressed = false;
-  double transcript_length;
+  int transcript_length;
+
+  String dirFile;
+  List<io.FileSystemEntity> fileList;
+  List<String> fileNameList = [];
+  List<String> dirNameList = [];
+  // TODO: get these code into _stop to count files every stopped
+  //   String dirFile = ziptranscript.storeDir;
+  // List fileList = io.Directory('$dirFile').listSync();
+  // print(file.length);
 
   // * indikator record
   bool _isRecordMode;
@@ -415,7 +430,7 @@ class RecorderPageState extends State<RecorderPage> {
       data.add(value.toString());
     });
     // print(data.length.toInt());
-    transcript_length = (data.length - 3) / 2;
+    transcript_length = (data.length.toInt() - 3) ~/ 2;
     // print(transcript_length.toInt());
     return data;
   }
@@ -425,6 +440,7 @@ class RecorderPageState extends State<RecorderPage> {
     // TODO: implement initState
     super.initState();
     _zipFilename();
+    _countDirs();
     // * record mode: state 1
     _isRecordMode = false;
     _isWaitMode = false;
@@ -569,6 +585,20 @@ class RecorderPageState extends State<RecorderPage> {
                       ),
                     ],
                   ),
+                  FutureBuilder(
+                      future: _stateRecord == 0 ? _countFiles() : null,
+                      builder: (BuildContext context, AsyncSnapshot snapshot) {
+                        if (snapshot.data == null) {
+                          return Center(
+                            child: Text('0 / $transcript_length'),
+                          );
+                        } else {
+                          return Center(
+                            child:
+                                Text('${snapshot.data} / $transcript_length'),
+                          );
+                        }
+                      }),
                   // new FlatButton(
                   //   onPressed: onCheckPlayAudio, //
                   //   child: new Text("Play",
@@ -636,9 +666,9 @@ class RecorderPageState extends State<RecorderPage> {
               0, customDir.length - 1); // hilangin "/" di belakang
         });
         print('${ziptranscript.storeDir} good');
-        String dirFile = ziptranscript.storeDir;
-        List file = io.Directory('$dirFile').listSync();
-        print(file.length);
+        // String dirFile = ziptranscript.storeDir;
+        // List file = io.Directory('$dirFile').listSync();
+        // print(file.length);
 
         customDir = directory + customDir + customFileName;
         // print('$customDir.wav');
@@ -742,6 +772,61 @@ class RecorderPageState extends State<RecorderPage> {
       _currentStatus = _current.status;
     });
     _zipping();
+  }
+
+  Future _countDirs() async {
+    io.Directory appDocDirectory;
+    if (io.Platform.isIOS) {
+      appDocDirectory = await getApplicationDocumentsDirectory();
+    } else {
+      appDocDirectory = await getExternalStorageDirectory();
+    }
+    String directory = appDocDirectory.path;
+
+    List<io.FileSystemEntity> dirList = io.Directory('$directory').listSync();
+    print('countDirs: $dirList');
+    dirList.forEach((value) {
+      String fileName = basename(value.path);
+      List<String> filename = fileName.split('_');
+
+      if (!(fileName.endsWith('.zip')) &&
+          filename[0] == indextranscript.userName &&
+          filename[3] == indextranscript.transcriptTitle) {
+        print("fileName: $fileName");
+        dirNameList.add(fileName);
+      }
+      // fileName.endsWith('.zip') && fileName.startsWith('jaler')
+      //     ? null
+      //     : print("fileName: $fileName");
+      // if (fileName.endsWith('.zip')) {
+      //   pass;
+      // }
+      // print("fileName: $fileName");
+    });
+  }
+
+  Future<String> _countFiles() async {
+    // await _countDirs();
+    dirFile = ziptranscript.storeDir;
+    fileList = io.Directory('$dirFile').listSync();
+    print('countfiles: $fileList');
+    // fileList.forEach((value) {
+    //   fileNameList.add(value.toString().split('/') as String);
+    //   fileNameList = fileNameList.toSet().toList(); // * remove duplicates
+    //   // value.toString().split('/');
+    // });
+    fileList.forEach((value) {
+      var pieces = value.toString().split('/');
+      var piece = pieces[pieces.length - 1];
+      fileNameList.add(piece);
+      // fileNameList.add(value.toString().split('/') as String);
+      // fileNameList = fileNameList.toSet().toList(); // * remove duplicates
+      // value.toString().split('/');
+    });
+    fileNameList = fileNameList.toSet().toList();
+    print(fileNameList);
+    String data = fileNameList.length.toString();
+    return data;
   }
 
   _stop() async {
@@ -858,7 +943,7 @@ class RecorderPageState extends State<RecorderPage> {
   void onNextTranscript() async {
     print("next");
     // 1. if index < max(index) then index++
-    if (indextranscript.number < transcript_length.toInt()) {
+    if (indextranscript.number < transcript_length) {
       // _stop();
       setState(() {
         indextranscript.number++;
