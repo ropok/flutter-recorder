@@ -16,6 +16,11 @@ import 'package:csv/csv.dart';
 import 'dart:async' show Future;
 import 'package:flutter_archive/flutter_archive.dart';
 
+import 'package:sttwinrecorder/draggable_scrollbar.dart';
+import 'package:flutter/foundation.dart';
+
+import 'package:fluttertoast/fluttertoast.dart';
+
 void main() {
   // SystemChrome.setEnabledSystemUIOverlays([]);
   return runApp(new MyApp());
@@ -372,8 +377,10 @@ class RecorderPage extends StatefulWidget {
   final LocalFileSystem localFileSystem;
   final IndexTranscript indextranscript;
   final initNumber;
+  final ScrollController controller;
 
-  RecorderPage({localFileSystem, this.indextranscript, this.initNumber})
+  RecorderPage(
+      {localFileSystem, this.indextranscript, this.initNumber, this.controller})
       : this.localFileSystem = localFileSystem ?? LocalFileSystem();
 
   @override
@@ -383,11 +390,14 @@ class RecorderPage extends StatefulWidget {
 class RecorderPageState extends State<RecorderPage> {
   IndexTranscript indextranscript;
   RecorderPageState(this.indextranscript);
+  ScrollController controller;
   FlutterAudioRecorder _recorder;
   Recording _current;
   RecordingStatus _currentStatus = RecordingStatus.Unset;
   // bool recordPressed = false;
   int transcript_length;
+
+  TextEditingController jumpTranscriptController = TextEditingController();
 
   String dirFile;
   List<io.FileSystemEntity> fileList;
@@ -440,7 +450,6 @@ class RecorderPageState extends State<RecorderPage> {
     // TODO: implement initState
     super.initState();
     _zipFilename();
-    print('test');
     _countDirs();
     // * record mode: state 1
     _isRecordMode = false;
@@ -453,6 +462,7 @@ class RecorderPageState extends State<RecorderPage> {
   Widget build(BuildContext context) {
     return new MaterialApp(
       home: new Scaffold(
+        appBar: AppBar(title: Text(indextranscript.transcriptTitle)),
         body: SafeArea(
           child: new Padding(
             padding: new EdgeInsets.all(1.0),
@@ -549,11 +559,15 @@ class RecorderPageState extends State<RecorderPage> {
                           // child: new Icon(Icons.fiber_manual_record_outlined),
                           // color: Colors.redAccent,
                           child: _stateRecord == 0
-                              ? new Icon(
+                              ?
+                              // () {
+                              new Icon(
                                   Icons.stop_circle,
                                   color: Colors.redAccent,
                                   size: 50.0,
                                 )
+                              // new Text("A");
+                              // }()
                               : new Icon(
                                   Icons.stop_outlined,
                                   size: 50.0,
@@ -591,15 +605,67 @@ class RecorderPageState extends State<RecorderPage> {
                       builder: (BuildContext context, AsyncSnapshot snapshot) {
                         if (snapshot.data == null) {
                           return Center(
-                            child: Text('0 / $transcript_length'),
+                            child:
+                                Text('jumlah terbaca: 0 / $transcript_length'),
                           );
                         } else {
                           return Center(
-                            child:
-                                Text('${snapshot.data} / $transcript_length'),
+                            child: Text(
+                                'jumlah terbaca: ${snapshot.data} / $transcript_length'),
                           );
                         }
                       }),
+                  new Container(
+                    width: MediaQuery.of(context).size.width * 0.35,
+                    child: TextField(
+                      controller: jumpTranscriptController,
+                      decoration: new InputDecoration(
+                        labelText: "jump",
+                        hintText: "1 - $transcript_length",
+                        contentPadding: EdgeInsets.all(10.0),
+                        suffixIcon: IconButton(
+                            onPressed: () {
+                              1 <= int.parse(jumpTranscriptController.text) &&
+                                      int.parse(
+                                              jumpTranscriptController.text) <=
+                                          transcript_length
+                                  ? () {
+                                      Fluttertoast.showToast(
+                                        msg:
+                                            "${jumpTranscriptController.text}_${indextranscript.transcriptTitle}",
+                                        toastLength: Toast.LENGTH_LONG,
+                                        gravity: ToastGravity.CENTER,
+                                        timeInSecForIosWeb: 1,
+                                        backgroundColor: Colors.greenAccent,
+                                        textColor: Colors.white,
+                                        fontSize: 12.0,
+                                      );
+                                      setState(() {
+                                        indextranscript.number = int.parse(
+                                            jumpTranscriptController.text);
+                                        indextranscript.fileName[1] =
+                                            indextranscript.number.toString();
+                                      });
+                                    }()
+                                  : Fluttertoast.showToast(
+                                      msg: "angka melebihi batas",
+                                      toastLength: Toast.LENGTH_SHORT,
+                                      gravity: ToastGravity.CENTER,
+                                      timeInSecForIosWeb: 1,
+                                      backgroundColor: Colors.redAccent,
+                                      textColor: Colors.white,
+                                      fontSize: 16.0,
+                                    );
+                            },
+                            icon: Icon(Icons.check_circle_outline_rounded)),
+                      ),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: <TextInputFormatter>[
+                        FilteringTextInputFormatter.digitsOnly
+                      ],
+                    ),
+                  ),
+
                   // new FlatButton(
                   //   onPressed: onCheckPlayAudio, //
                   //   child: new Text("Play",
@@ -608,6 +674,117 @@ class RecorderPageState extends State<RecorderPage> {
                   // ),
                 ]),
           ),
+        ),
+        drawer: Drawer(
+          // child: DraggableScrollbar.arrows(
+          //     alwaysVisibleScrollThumb: true,
+          //     backgroundColor: Colors.grey[850],
+          //     padding: EdgeInsets.only(right: 4.0),
+          //     labelTextBuilder: (double offset) => Text("${offset ~/ 10.0}",
+          //         style: TextStyle(color: Colors.white)),
+          //     controller: controller,
+          //     child: ListView.builder(
+          //       controller: controller,
+          //       itemCount: transcript_length,
+          //       itemExtent: 10.0,
+          //       itemBuilder: (context, index) {
+          //         return Container(
+          //           padding: EdgeInsets.all(8.0),
+          //           child: Material(
+          //             elevation: 4.0,
+          //             // color: Colors.purple[index % 9 * 100],
+          //             child: Center(
+          //               child: Text(
+          //                 index.toString(),
+          //               ),
+          //             ),
+          //           ),
+          //         );
+          //       },
+          //     ))
+          // return Draggable
+          // DrawerHeader(
+          //   child: Text('Drawer Header'),
+          //   // decoration: ,
+          // ),
+          // children: <Widget>[],
+          child: Scrollbar(
+            // isAlwaysShown: true,
+            controller: controller,
+            child: ListView.builder(
+              controller: controller,
+              itemCount: transcript_length,
+              itemBuilder: (context, index) {
+                // FutureBuilder(
+                //     future: loadAsset(),
+                //     builder: (BuildContext context, AsyncSnapshot snapshot) {
+                //       if (snapshot.data == null) {
+                //         return Card(
+                //             child: ListTile(
+                //           title: Text("${index + 1}"),
+                //         ));
+                //       } else {
+                //         return Card(
+                //             child: ListTile(
+                //           title: Text("$index ABC"),
+                //         ));
+                //       }
+                //     });
+                return Card(
+                  child: FutureBuilder(
+                      future: loadAsset(),
+                      builder: (BuildContext context, AsyncSnapshot snapshot) {
+                        if (snapshot.data == null) {
+                          return Card(
+                              child: ListTile(
+                            title: Text("${index + 1}"),
+                          ));
+                        } else {
+                          return Center(
+                              child: ListTile(
+                            title: Text(
+                                "${index + 1}. ${snapshot.data[((index + 1) * 2) + 1]}"),
+                            onTap: () {
+                              Navigator.of(context).pop();
+                              setState(() {
+                                indextranscript.number = index + 1;
+                                // 2. filename.update
+                                indextranscript.fileName[1] =
+                                    indextranscript.number.toString();
+                              });
+
+                              Fluttertoast.showToast(
+                                msg:
+                                    "${index + 1}_${indextranscript.transcriptTitle}",
+                                toastLength: Toast.LENGTH_LONG,
+                                gravity: ToastGravity.CENTER,
+                                timeInSecForIosWeb: 1,
+                                backgroundColor: Colors.greenAccent,
+                                textColor: Colors.white,
+                                fontSize: 12.0,
+                              );
+                            },
+                          ));
+                        }
+                      }),
+                  // title: Text("${index + 1}"),
+                );
+              },
+            ),
+          ),
+
+          // child: new ListView(
+          //   padding: const EdgeInsets.all(8),
+          //   children: new List.generate(
+          //     transcript_length,
+          //     (index) => new ListTile(
+          //       onTap: () {
+          //         // Navigator.pop(context);
+          //       },
+          //       title: Text('$index'),
+          //     ),
+          //   ),
+          // ),
         ),
       ),
     );
