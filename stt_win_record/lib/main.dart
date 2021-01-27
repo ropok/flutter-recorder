@@ -296,8 +296,8 @@ class RecorderExampleState extends State<RecorderExample> {
                     jenisKelaminUser.name == "Perempuan"
                         ? _jenisKelamin = "f"
                         : _jenisKelamin = "m";
-                    String _username = usernameField.text;
-                    String _dialek = dialekField.text;
+                    String _username = usernameField.text.toLowerCase();
+                    String _dialek = dialekField.text.toLowerCase();
 
                     // String _index = '${}';
                     // String number = format(count, '0' + digit_space + 'd');
@@ -354,24 +354,6 @@ class RecorderExampleState extends State<RecorderExample> {
 /*
  * Recording Page
  */
-
-// class RecordingPage extends StatefulWidget {
-//   @override
-//   _RecordingPageState createState() => new _RecordingPageState();
-// }
-
-// class _RecordingPageState extends State<RecordingPage> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return new MaterialApp(
-//       home: new Scaffold(
-//         body: SafeArea(
-//           child: new RecorderPage(),
-//         ),
-//       ),
-//     );
-//   }
-// }
 
 class RecorderPage extends StatefulWidget {
   final LocalFileSystem localFileSystem;
@@ -469,32 +451,47 @@ class RecorderPageState extends State<RecorderPage> {
             child: new Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  // new Text("Status : $_currentStatus"),
-                  FutureBuilder(
-                      future: loadAsset(),
-                      builder: (BuildContext context, AsyncSnapshot snapshot) {
-                        // this condition is important
-                        if (snapshot.data == null) {
-                          return Center(
-                            child: Text('loading data'),
-                          );
-                        } else {
-                          return Center(
-                              // karena newline tidak terbaca sebagai split
-                              child: Text(snapshot
-                                  .data[(indextranscript.number * 2) + 1]));
-                        }
-                      }),
-                  new Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: new Text('${indextranscript.fileName.join()}'),
+                  new Container(
+                    width: MediaQuery.of(context).size.width * 0.85,
+                    height: MediaQuery.of(context).size.height * 0.05,
+                    // new Row(
+                    //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+
+                    child: Flexible(
+                      child: new Text(
+                        '${indextranscript.fileName.join()}',
+                        textAlign: TextAlign.center,
                       ),
-                      // new Text(indextranscript.number.toString()),
-                    ],
+                    ),
+
+                    // ),
                   ),
+                  // //
+                  // * TEXT TRANSCRIPT
+                  new Container(
+                    width: MediaQuery.of(context).size.width * 0.85,
+                    height: MediaQuery.of(context).size.height * 0.5,
+                    child: FutureBuilder(
+                        future: loadAsset(),
+                        builder:
+                            (BuildContext context, AsyncSnapshot snapshot) {
+                          // this condition is important
+                          if (snapshot.data == null) {
+                            return Center(
+                              child: Text('loading data'),
+                            );
+                          } else {
+                            return Center(
+                                // karena newline tidak terbaca sebagai split
+                                child: Text(
+                              snapshot.data[(indextranscript.number * 2) + 1],
+                              style: TextStyle(height: 1.25, fontSize: 32),
+                            ));
+                          }
+                        }),
+                  ),
+                  // //
+
                   // * Indikator bar
                   Padding(
                     padding: const EdgeInsets.all(8.0),
