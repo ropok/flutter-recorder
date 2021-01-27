@@ -1,24 +1,17 @@
 import 'dart:async';
 import 'dart:io' as io;
-
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
-
 import 'package:csv/csv.dart';
 import 'dart:async' show Future;
 import 'package:flutter_archive/flutter_archive.dart';
-
-import 'package:sttwinrecorder/draggable_scrollbar.dart';
-import 'package:flutter/foundation.dart';
-
 import 'package:fluttertoast/fluttertoast.dart';
 
 void main() {
@@ -31,8 +24,8 @@ class User {
   final String name;
 }
 
-class zipTranscript {
-  zipTranscript({this.storeDir, this.zipDir, this.zipName, this.zipDateTime});
+class ZipTranscript {
+  ZipTranscript({this.storeDir, this.zipDir, this.zipName, this.zipDateTime});
   String storeDir;
   String zipDir;
   String zipName;
@@ -81,74 +74,36 @@ class RecorderExample extends StatefulWidget {
 }
 
 class RecorderExampleState extends State<RecorderExample> {
-  FlutterAudioRecorder _recorder;
-  Recording _current;
-  RecordingStatus _currentStatus = RecordingStatus.Unset;
-
   User jenisKelaminUser;
   List<User> users = <User>[User('Perempuan'), User('Laki-laki')];
 
-  // // >> CSV Read
-  // List<List<dynamic>> data = [];
-
-  // Future<List<String>> loadAsset() async {
-  //   var myData = await rootBundle.loadString("assets/quran2.csv");
-  //   List<List<dynamic>> csvTable = CsvToListConverter().convert(myData);
-  //   // print(csvTable[0]);
-  //   // List<List<dynamic>> csvTable_data = CsvToListConverter(
-  //   //   fieldDelimiter: ',',
-  //   // ).convert(csvTable);
-  //   //
-  //   List<String> data = [];
-  //   csvTable[0].forEach((value) {
-  //     data.add(value.toString());
-  //   });
-  //   return data;
-  // }
-
-  // loadAsset() async {
-  //   final myData = await rootBundle.loadString("assets/dongengwidya.csv");
-  //   List<List<dynamic>> csvTable = CsvToListConverter().convert(myData);
-  //   print(csvTable);
-  //   data = csvTable;
-  //   setState(() {});
-  // }
-
-  // IndexTranscript indextranscript;
-  // var directoryName = new IndexTranscript(0, 'dirName');
   final indextranscript = IndexTranscript(
-      // number: new NumberFormat("000"),
       number: 1,
       dirName: 'dirName',
       fileName: ['fileName1', 'index', 'fileName2'],
       transcriptTitle: 'audiobuku.csv',
-      userName: 'user000'); // initiation
+      userName: 'user000'); // * initiation
 
-  // >> Form
+  // * Form
   TextEditingController usernameField = TextEditingController();
   TextEditingController dialekField = TextEditingController();
   TextEditingController jenisKelaminField = TextEditingController();
-  // String _jenisKelamin = "Perempuan";
   String _transcript = "audiobuku";
   String directory;
   List file;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _listFiles();
-    // print(file.length);
   }
 
-  // * listfiles
+  // * read directory's content
   void _listFiles() async {
     directory = (await getApplicationDocumentsDirectory()).path;
-    print(directory);
     setState(() {
       file = io.Directory('$directory').listSync();
     });
-    print(file);
   }
 
   @override
@@ -161,7 +116,7 @@ class RecorderExampleState extends State<RecorderExample> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 SizedBox(height: 0.0),
-                // Text Box Username
+                // * Text Box Username
                 SizedBox(height: 20.0),
                 TextField(
                   controller: usernameField,
@@ -177,7 +132,7 @@ class RecorderExampleState extends State<RecorderExample> {
                     border: const OutlineInputBorder(),
                   ),
                 ),
-                // >> Dropdown Jenis Kelamin
+                // * Dropdown Jenis Kelamin
                 SizedBox(height: 20.0),
                 DropdownButtonFormField<User>(
                     value: jenisKelaminUser,
@@ -189,7 +144,6 @@ class RecorderExampleState extends State<RecorderExample> {
                               ),
                             ))
                         .toList(),
-                    // hint: Text('Jenis Kelamin'),
                     onChanged: (User newValue) {
                       setState(() {
                         jenisKelaminUser = newValue;
@@ -204,8 +158,7 @@ class RecorderExampleState extends State<RecorderExample> {
                       icon: Icon(Icons.wc),
                       border: const OutlineInputBorder(),
                     )),
-                // >> Dropdown Jenis Kelamin
-                // Text Box Dialek
+                // * Text Box Dialek
                 SizedBox(height: 20.0),
                 TextField(
                   controller: dialekField,
@@ -221,7 +174,7 @@ class RecorderExampleState extends State<RecorderExample> {
                     border: const OutlineInputBorder(),
                   ),
                 ),
-                // >> Dropdown transcript
+                // * Dropdown transcript
                 SizedBox(height: 10.0),
                 DropdownButtonFormField<String>(
                     value: _transcript,
@@ -277,7 +230,7 @@ class RecorderExampleState extends State<RecorderExample> {
                       icon: Icon(Icons.sticky_note_2),
                       border: const OutlineInputBorder(),
                     )),
-                // >> Dropdown Jenis Kelamin
+                // * Dropdown Jenis Kelamin
                 SizedBox(height: 10.0),
                 RaisedButton(
                   child: Text(
@@ -285,42 +238,27 @@ class RecorderExampleState extends State<RecorderExample> {
                     style: TextStyle(fontSize: 18),
                   ),
                   onPressed: () async {
-                    // _getDirName;
-
                     var now = new DateTime.now();
                     var formatter = new DateFormat('yyyyMMdd');
                     String _formattedDate = formatter.format(now);
                     String _jenisKelamin;
                     // * ganti kode jenis kelamin
-                    // String jenisKelamin =
                     jenisKelaminUser.name == "Perempuan"
                         ? _jenisKelamin = "f"
                         : _jenisKelamin = "m";
                     String _username = usernameField.text.toLowerCase();
                     String _dialek = dialekField.text.toLowerCase();
-
-                    // String _index = '${}';
-                    // String number = format(count, '0' + digit_space + 'd');
-                    // final formatterIndex = new NumberFormat("000");
-                    // 1 -> 001
-                    // final formatterIndex = indextranscript.number;
-                    // String _index = formatterIndex.format(1);
                     setState(() {
                       indextranscript.number = 1;
                     });
                     int _index = indextranscript.number;
-                    // String _index = formatterIndex.format(1);
-                    print(_index);
                     String _dirname =
                         "$_username\_$_jenisKelamin\_$_formattedDate\_$_transcript\_$_dialek\_hp";
                     String _filename1 =
                         "$_username\_$_jenisKelamin\_$_formattedDate\_";
                     String _filename2 = "\_$_transcript\_$_dialek\_hp";
-                    String _filename = "$_filename1$_index$_filename2";
 
                     // example: rut122_f_20201216_001_audiobuku_yogyakarta_hp
-                    print(_dirname);
-                    print(_filename);
                     setState(() {
                       indextranscript.dirName = _dirname;
                       indextranscript.fileName = [
@@ -331,16 +269,11 @@ class RecorderExampleState extends State<RecorderExample> {
                       indextranscript.transcriptTitle = "$_transcript";
                       indextranscript.userName = "$_username";
                     });
-                    // directoryName.dirName = _dirname;
-                    print('b');
-                    print(indextranscript.dirName);
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) =>
                               RecorderPage(indextranscript: indextranscript)),
-                      // RecorderPage(
-                      //     dir_name: new IndexTranscript(0, _dirname))),
                     );
                   },
                 ),
@@ -377,7 +310,7 @@ class RecorderPageState extends State<RecorderPage> {
   Recording _current;
   RecordingStatus _currentStatus = RecordingStatus.Unset;
   // bool recordPressed = false;
-  int transcript_length;
+  int transcriptLength;
 
   TextEditingController jumpTranscriptController = TextEditingController();
 
@@ -385,14 +318,8 @@ class RecorderPageState extends State<RecorderPage> {
   List<io.FileSystemEntity> fileList;
   List<String> fileNameList = [];
   List<String> dirNameList = [];
-  // TODO: get these code into _stop to count files every stopped
-  //   String dirFile = ziptranscript.storeDir;
-  // List fileList = io.Directory('$dirFile').listSync();
-  // print(file.length);
 
   // * indikator record
-  bool _isRecordMode;
-  bool _isWaitMode;
   bool _isButtonDisabled;
   int _stateRecord;
 
@@ -403,16 +330,13 @@ class RecorderPageState extends State<RecorderPage> {
     Colors.redAccent
   ];
 
-  final ziptranscript = zipTranscript(
+  final ziptranscript = ZipTranscript(
     storeDir: "source_directory_zip",
     zipDir: "destination_directory_zip",
     zipName: "directory.zip",
     zipDateTime: "yyyyMMdd_HHmmss",
   );
 
-  // RecorderPageState({Key key, @required this.dirName});
-
-  // RecorderPageState({this.directoryName});
   Future<List<String>> loadAsset() async {
     var myData = await rootBundle
         .loadString("assets/${indextranscript.transcriptTitle}.csv");
@@ -421,21 +345,16 @@ class RecorderPageState extends State<RecorderPage> {
     csvTable[0].forEach((value) {
       data.add(value.toString());
     });
-    // print(data.length.toInt());
-    transcript_length = (data.length.toInt() - 3) ~/ 2;
-    // print(transcript_length.toInt());
+    transcriptLength = (data.length.toInt() - 3) ~/ 2;
     return data;
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _zipFilename();
     _countDirs();
     // * record mode: state 1
-    _isRecordMode = false;
-    _isWaitMode = false;
     _isButtonDisabled = false;
     _stateRecord = 0;
   }
@@ -454,19 +373,13 @@ class RecorderPageState extends State<RecorderPage> {
                   new Container(
                     width: MediaQuery.of(context).size.width * 0.85,
                     height: MediaQuery.of(context).size.height * 0.05,
-                    // new Row(
-                    //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-
                     child: Flexible(
                       child: new Text(
                         '${indextranscript.fileName.join()}',
                         textAlign: TextAlign.center,
                       ),
                     ),
-
-                    // ),
                   ),
-                  // //
                   // * TEXT TRANSCRIPT
                   new Container(
                     width: MediaQuery.of(context).size.width * 0.85,
@@ -490,7 +403,6 @@ class RecorderPageState extends State<RecorderPage> {
                           }
                         }),
                   ),
-                  // //
 
                   // * Indikator bar
                   Padding(
@@ -504,7 +416,6 @@ class RecorderPageState extends State<RecorderPage> {
                           ),
                         )),
                   ),
-                  // new SizedBox(child: c,olor: Colors.grey),
                   new Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
@@ -534,55 +445,34 @@ class RecorderPageState extends State<RecorderPage> {
                                     case RecordingStatus.Unset:
                                       {
                                         onRecordTranscript();
-                                        // recordPressed = true;
                                         break;
                                       }
                                     case RecordingStatus.Recording:
                                       {
                                         _stop();
-                                        // recordPressed = false;
                                         break;
                                       }
                                     case RecordingStatus.Stopped:
                                       {
                                         onRecordTranscript();
-                                        // recordPressed = true;
                                         break;
                                       }
                                     default:
                                       break;
                                   }
                                 },
-                          // child: new Icon(Icons.fiber_manual_record_outlined),
-                          // color: Colors.redAccent,
                           child: _stateRecord == 0
-                              ?
-                              // () {
-                              new Icon(
+                              ? new Icon(
                                   Icons.stop_circle,
                                   color: Colors.redAccent,
                                   size: 50.0,
                                 )
-                              // new Text("A");
-                              // }()
                               : new Icon(
                                   Icons.stop_outlined,
                                   size: 50.0,
                                 ),
-                          // child: recordPressed
-                          //     ? new Icon(
-                          //         Icons.stop_outlined,
-                          //         size: 50.0,
-                          //       )
-                          //     : new Icon(
-                          //         Icons.stop_circle,
-                          //         color: Colors.redAccent,
-                          //         size: 50.0,
-                          //       ),
-                          // color:
-                          //     recordPressed ? Colors.white38 : Colors.white38,
                         ),
-                      ), //
+                      ),
                       // * Next Transcript
                       new FlatButton(
                         onPressed: _stateRecord == 0
@@ -603,12 +493,12 @@ class RecorderPageState extends State<RecorderPage> {
                         if (snapshot.data == null) {
                           return Center(
                             child:
-                                Text('jumlah terbaca: 0 / $transcript_length'),
+                                Text('jumlah terbaca: 0 / $transcriptLength'),
                           );
                         } else {
                           return Center(
                             child: Text(
-                                'jumlah terbaca: ${snapshot.data} / $transcript_length'),
+                                'jumlah terbaca: ${snapshot.data} / $transcriptLength'),
                           );
                         }
                       }),
@@ -618,14 +508,14 @@ class RecorderPageState extends State<RecorderPage> {
                       controller: jumpTranscriptController,
                       decoration: new InputDecoration(
                         labelText: "jump",
-                        hintText: "1 - $transcript_length",
+                        hintText: "1 - $transcriptLength",
                         contentPadding: EdgeInsets.all(10.0),
                         suffixIcon: IconButton(
                             onPressed: () {
                               1 <= int.parse(jumpTranscriptController.text) &&
                                       int.parse(
                                               jumpTranscriptController.text) <=
-                                          transcript_length
+                                          transcriptLength
                                   ? () {
                                       Fluttertoast.showToast(
                                         msg:
@@ -662,71 +552,16 @@ class RecorderPageState extends State<RecorderPage> {
                       ],
                     ),
                   ),
-
-                  // new FlatButton(
-                  //   onPressed: onCheckPlayAudio, //
-                  //   child: new Text("Play",
-                  //       style: TextStyle(color: Colors.black54)),
-                  //   color: Colors.lightGreen[100],
-                  // ),
                 ]),
           ),
         ),
         drawer: Drawer(
-          // child: DraggableScrollbar.arrows(
-          //     alwaysVisibleScrollThumb: true,
-          //     backgroundColor: Colors.grey[850],
-          //     padding: EdgeInsets.only(right: 4.0),
-          //     labelTextBuilder: (double offset) => Text("${offset ~/ 10.0}",
-          //         style: TextStyle(color: Colors.white)),
-          //     controller: controller,
-          //     child: ListView.builder(
-          //       controller: controller,
-          //       itemCount: transcript_length,
-          //       itemExtent: 10.0,
-          //       itemBuilder: (context, index) {
-          //         return Container(
-          //           padding: EdgeInsets.all(8.0),
-          //           child: Material(
-          //             elevation: 4.0,
-          //             // color: Colors.purple[index % 9 * 100],
-          //             child: Center(
-          //               child: Text(
-          //                 index.toString(),
-          //               ),
-          //             ),
-          //           ),
-          //         );
-          //       },
-          //     ))
-          // return Draggable
-          // DrawerHeader(
-          //   child: Text('Drawer Header'),
-          //   // decoration: ,
-          // ),
-          // children: <Widget>[],
           child: Scrollbar(
-            // isAlwaysShown: true,
             controller: controller,
             child: ListView.builder(
               controller: controller,
-              itemCount: transcript_length,
+              itemCount: transcriptLength,
               itemBuilder: (context, index) {
-                // FutureBuilder(
-                //     future: loadAsset(),
-                //     builder: (BuildContext context, AsyncSnapshot snapshot) {
-                //       if (snapshot.data == null) {
-                //         return Card(
-                //             child: ListTile(
-                //           title: Text("${index + 1}"),
-                //         ));
-                //       } else {
-                //         return Card(
-                //             child: ListTile(
-                //           title: Text("$index ABC"),
-                //         ));
-                //       }
-                //     });
                 return Card(
                   child: FutureBuilder(
                       future: loadAsset(),
@@ -764,29 +599,13 @@ class RecorderPageState extends State<RecorderPage> {
                           ));
                         }
                       }),
-                  // title: Text("${index + 1}"),
                 );
               },
             ),
           ),
-
-          // child: new ListView(
-          //   padding: const EdgeInsets.all(8),
-          //   children: new List.generate(
-          //     transcript_length,
-          //     (index) => new ListTile(
-          //       onTap: () {
-          //         // Navigator.pop(context);
-          //       },
-          //       title: Text('$index'),
-          //     ),
-          //   ),
-          // ),
         ),
       ),
     );
-    // return new Center(
-    // );
   }
 
   _zipFilename() async {
@@ -802,19 +621,9 @@ class RecorderPageState extends State<RecorderPage> {
   _init() async {
     try {
       if (await FlutterAudioRecorder.hasPermissions) {
-        // print(directoryName.)
-        // String customDir = '/20201218/';
-        // indextranscript.dirName = "test";
-        // String customDir = '/${indextranscript.dirName}/';
-        // print(directoryName.dirName);
-        // print()
-        // print()
-        // String customDir = '/test/';
         String customDir =
             '/${indextranscript.dirName}_${ziptranscript.zipDateTime}/';
         String customFileName = '${indextranscript.fileName.join()}';
-        // example: rut122_f_20201216_001_audiobuku_yogyakarta_hp
-        // String customFileName =
 
         io.Directory appDocDirectory;
         if (io.Platform.isIOS) {
@@ -823,10 +632,10 @@ class RecorderPageState extends State<RecorderPage> {
           appDocDirectory = await getExternalStorageDirectory();
         }
 
-        //create Variable
+        // * create Variable
         String directory = appDocDirectory.path;
 
-        //create directory and its subdirectory
+        // * create directory and its subdirectory
         if (await io.Directory(directory + customDir).exists() != true) {
           print("Directory not exist");
           new io.Directory(directory + customDir).createSync(recursive: true);
@@ -838,64 +647,24 @@ class RecorderPageState extends State<RecorderPage> {
           ziptranscript.storeDir = directory + customDir;
           ziptranscript.zipDir = directory;
           ziptranscript.zipName = customDir.substring(
-              0, customDir.length - 1); // hilangin "/" di belakang
+              0, customDir.length - 1); // * hilangin "/" di belakang
         });
-        print('${ziptranscript.storeDir} good');
-        // String dirFile = ziptranscript.storeDir;
-        // List file = io.Directory('$dirFile').listSync();
-        // print(file.length);
 
         customDir = directory + customDir + customFileName;
-        // print('$customDir.wav');
-        // print()
-        // String customDir_wav;
-        // if (customDir != null && customDir.length >= 5) {
-        //   customDir_wav = customDir.substring(0, customDir.length - 5);
-        // }
-        // print(customDir);
         String fileName = '$customDir.wav';
-        print('deleting $fileName');
         await deleteFile(fileName);
-
-        // File file = widget.localFileSystem.file(customDir);
-        // File file = io.File(
-        //     '/storage/emulated/0/Android/data/com.example.stt_win_record/files/jaler_f_20210111_audiobuku_jogja_hp/jaler_f_20210111_1_audiobuku_jogja_hp.wav');
-        // print(file);
-        // await file.delete();
-        // if (file.existsSync()) {
-        //   print("file deleteing");
-        //   // file.deleteSync(recursive: true);
-
-        //   print("file deleted");
-        // }
-        // print("customDir checked");
-        // .wav <---> AudioFormat.WAV
-        // .mp4 .m4a .aac <---> AudioFormat.AAC`
-        // AudioFormat is optional, if given value, will overwrite path extension when there is conflicts.
         _recorder = FlutterAudioRecorder(customDir,
             audioFormat: AudioFormat.WAV, sampleRate: 16000);
-        // print("_recorder checked");
-
         await _recorder.initialized;
-        // print("_recorder initialized");
-        // after initialization
         var current = await _recorder.current(channel: 0);
-        print(current);
         // should be "Initialized", if all working fine
         setState(() {
           _current = current;
           _currentStatus = current.status;
-          print(_currentStatus);
         });
       }
-      // else {
-      //   Scaffold.of(context).showSnackBar(
-      //       new SnackBar(content: new Text("You must accept permissions")));
-      // }
     } catch (e) {
-      print("cek");
       print(e);
-      print("ricek");
     }
   }
 
@@ -914,7 +683,6 @@ class RecorderPageState extends State<RecorderPage> {
         }
 
         var current = await _recorder.current(channel: 0);
-        // print(current.status);
         setState(() {
           _current = current;
           _currentStatus = _current.status;
@@ -925,23 +693,9 @@ class RecorderPageState extends State<RecorderPage> {
     }
   }
 
-  _resume() async {
-    await _recorder.resume();
-    setState(() {});
-  }
-
-  _pause() async {
-    await _recorder.pause();
-    setState(() {});
-  }
-
   _stopRecord() async {
     // ! timer stop
     var result = await _recorder.stop();
-    print("Stop recording: ${result.path}");
-    print("Stop recording: ${result.duration}");
-    File file = widget.localFileSystem.file(result.path);
-    print("File length: ${await file.length()}");
     setState(() {
       _current = result;
       _currentStatus = _current.status;
@@ -959,7 +713,6 @@ class RecorderPageState extends State<RecorderPage> {
     String directory = appDocDirectory.path;
 
     List<io.FileSystemEntity> dirList = io.Directory('$directory').listSync();
-    // print('countDirs: $dirList');
     dirList.forEach((value) {
       String fileName = basename(value.path);
       List<String> filename = fileName.split('_');
@@ -967,7 +720,6 @@ class RecorderPageState extends State<RecorderPage> {
       if (!(fileName.endsWith('.zip')) &&
           filename[0] == indextranscript.userName &&
           filename[3] == indextranscript.transcriptTitle) {
-        // print("fileName: $fileName");
         dirNameList.add(fileName);
       }
 
@@ -978,21 +730,16 @@ class RecorderPageState extends State<RecorderPage> {
   }
 
   Future<String> _countFiles() async {
-    // _countDirs();
     for (String dirname in dirNameList) {
       dirFile = "${ziptranscript.zipDir}/$dirname";
-      print("reading $dirFile");
       fileList = io.Directory('$dirFile').listSync();
-      print('filelist(1): $fileList');
       fileList.forEach((value) {
         String fileName = basename(value.path);
         fileNameList.add(fileName);
       });
-      print('filelist(2): $fileList');
     }
 
     fileNameList = fileNameList.toSet().toList();
-    print(fileNameList);
     String data = fileNameList.length.toString();
     return data;
   }
@@ -1026,71 +773,32 @@ class RecorderPageState extends State<RecorderPage> {
     });
   }
 
-  Widget _buildText(RecordingStatus status) {
-    var text = "";
-    switch (_currentStatus) {
-      case RecordingStatus.Initialized:
-        {
-          text = 'Start';
-          break;
-        }
-      case RecordingStatus.Recording:
-        {
-          text = 'Pause';
-          break;
-        }
-      case RecordingStatus.Paused:
-        {
-          text = 'Resume';
-          break;
-        }
-      case RecordingStatus.Stopped:
-        {
-          text = 'Init';
-          break;
-        }
-      default:
-        break;
-    }
-    return Text(text, style: TextStyle(color: Colors.white));
-  }
-
   void onPlayAudio() async {
     AudioPlayer audioPlayer = AudioPlayer();
     await audioPlayer.play(_current.path, isLocal: true);
   }
 
   void onPreviousTranscript() async {
-    print("before");
-    // 1. if index > 1 then index--
+    // * 1. if index > 1 then index--
     if (indextranscript.number > 1) {
-      // _stop();
       setState(() {
         indextranscript.number--;
         // 2. filename.update
         indextranscript.fileName[1] = indextranscript.number.toString();
       });
-      // 3. if file exist -> delete
-      // File file =
-      // 3. _init
-      // _init();
     }
   }
 
   void onRecordTranscript() async {
-    print("record");
     _stateRecord = 1;
     _isButtonDisabled = true;
     await _init();
     await _start();
     // ! use timer here
-    countDownTimer_start(1);
-    // print(_current?.duration.inMinutes.toString());
-    // _current?.duration.inMilliseconds >= 3000 ? print("A") : print("B");
-    // print(_current?.duration.toString());
+    countDownTimerstart(1);
   }
 
-  countDownTimer_start(int _start) {
+  countDownTimerstart(int _start) {
     Timer _timer;
     const oneSec = const Duration(seconds: 1);
     _timer = new Timer.periodic(oneSec, (Timer timer) {
@@ -1111,28 +819,15 @@ class RecorderPageState extends State<RecorderPage> {
   }
 
   void onNextTranscript() async {
-    print("next");
-    // 1. if index < max(index) then index++
-    if (indextranscript.number < transcript_length) {
-      // _stop();
+    // * 1. if index < max(index) then index++
+    if (indextranscript.number < transcriptLength) {
       setState(() {
         indextranscript.number++;
-        // 2. filename.update
+        // * 2. filename.update
         indextranscript.fileName[1] = indextranscript.number.toString();
       });
-      // 3. _init
-      // _init();
     } else {
-      // _stop();
       doneDialog();
-      // showDialog(
-      //     context: this.context,
-      //     builder: (BuildContext context) {
-      //       return AlertDialog(
-      //         title: Text("Alert Dialog"),
-      //         content: Text("Dialog Content"),
-      //       );
-      //     });
     }
   }
 
@@ -1146,23 +841,17 @@ class RecorderPageState extends State<RecorderPage> {
     } else {
       appDocDirectory = await getExternalStorageDirectory();
     }
-    //create Variable
+    // * create Variable
     String directory = appDocDirectory.path;
-
     customDir = directory + customDir + customFileName;
 
     try {
-      // var file = io.File(
-      // '/storage/emulated/0/Android/data/com.example.stt_win_record/files/jaler_f_20210111_audiobuku_jogja_hp/jaler_f_20210111_1_audiobuku_jogja_hp.wav');
       var file = io.File('$customDir.wav');
       String fileName = '$customDir.wav';
       if (await file.exists()) {
-        // file exists, it is safe to call play on it
         await audioPlayer.play(fileName, isLocal: true);
       }
-    } catch (e) {
-      // error in getting access to the file
-    }
+    } catch (e) {}
   }
 
   Future<void> doneDialog() async {
@@ -1198,8 +887,6 @@ class RecorderPageState extends State<RecorderPage> {
                   MaterialPageRoute(
                       builder: (context) =>
                           RecorderPage(indextranscript: indextranscript)),
-                  // RecorderPage(
-                  //     dir_name: new IndexTranscript(0, _dirname))),
                 );
               },
             ),
@@ -1211,15 +898,13 @@ class RecorderPageState extends State<RecorderPage> {
 
   Future<void> deleteFile(String fileName) async {
     try {
-      // var file = io.File(
-      // '/storage/emulated/0/Android/data/com.example.stt_win_record/files/jaler_f_20210111_audiobuku_jogja_hp/jaler_f_20210111_1_audiobuku_jogja_hp.wav');
       var file = io.File(fileName);
       if (await file.exists()) {
-        // file exists, it is safe to call delete on it
+        // * file exists, it is safe to call delete on it
         await file.delete();
       }
     } catch (e) {
-      // error in getting access to the file
+      // * error in getting access to the file
     }
   }
 
@@ -1230,20 +915,19 @@ class RecorderPageState extends State<RecorderPage> {
   io.File _createZipFile(String fileName) {
     final zipFilePath = ziptranscript.zipDir + "/" + fileName;
     final zipFile = io.File(zipFilePath);
-
+    // * Deleting existing zip file
     if (zipFile.existsSync()) {
-      print("Deleting existing zip file: " + zipFile.path);
       zipFile.deleteSync();
     }
     return zipFile;
   }
 
   Future<io.File> _testZip() async {
-    print("_appDataDir=" + ziptranscript.zipDir);
+    // * _appDataDir
     final storeDir = io.Directory(ziptranscript.storeDir);
 
+    // * Writing to zip file
     final zipFile = _createZipFile("${ziptranscript.zipName}.zip");
-    print("Writing to zip file: " + zipFile.path);
 
     try {
       await ZipFile.createFromDirectory(
@@ -1254,80 +938,3 @@ class RecorderPageState extends State<RecorderPage> {
     return zipFile;
   }
 }
-
-class zipPage extends StatefulWidget {
-  final zipTranscript ziptranscript;
-  zipPage({this.ziptranscript});
-  @override
-  _zipPageState createState() => new _zipPageState(ziptranscript);
-}
-
-class _zipPageState extends State<zipPage> {
-  zipTranscript ziptranscript;
-  _zipPageState(this.ziptranscript);
-  @override
-  Widget build(BuildContext context) {
-    return new MaterialApp(
-      home: new Scaffold(
-        body: SafeArea(
-          child: new Padding(
-            padding: new EdgeInsets.all(1.0),
-            child: new Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                new Text("Zipping"),
-                new RaisedButton(child: Text("Test"), onPressed: () => _test()),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future _test() async {
-    await _testZip();
-  }
-
-  io.File _createZipFile(String fileName) {
-    final zipFilePath = ziptranscript.zipDir + "/" + fileName;
-    final zipFile = io.File(zipFilePath);
-
-    if (zipFile.existsSync()) {
-      print("Deleting existing zip file: " + zipFile.path);
-      zipFile.deleteSync();
-    }
-    return zipFile;
-  }
-
-  Future<io.File> _testZip() async {
-    var now = new DateTime.now();
-    var formatter = new DateFormat('yyyyMMdd_HHmmss');
-    String _formattedDate = formatter.format(now);
-    print("_appDataDir=" + ziptranscript.zipDir);
-    final storeDir = io.Directory(ziptranscript.storeDir);
-
-    final zipFile =
-        _createZipFile("${ziptranscript.zipName}_$_formattedDate.zip");
-    print("Writing to zip file: " + zipFile.path);
-
-    try {
-      await ZipFile.createFromDirectory(
-          sourceDir: storeDir, zipFile: zipFile, recurseSubDirs: true);
-    } on PlatformException catch (e) {
-      print(e);
-    }
-    return zipFile;
-  }
-
-  // void zippingDir() async {
-  //   final dataDir = Directory(indextranscript.dirName);
-  //   try {
-  //     final zipFile = File("zip_zap_zap");
-  //     ZipFile.createFromDirectory(
-  //         sourceDir: dataDir, zipFile: zipFile, recureSubDirs: true);
-  //   } catch (e) {
-  //     print(e);
-  //   }
-  // }
-} // class-state
