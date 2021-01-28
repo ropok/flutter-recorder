@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io' as io;
+import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -125,7 +126,7 @@ class RecorderExampleState extends State<RecorderExample> {
                 // * Text Box Username
                 SizedBox(height: 20.0),
                 TextFormField(
-                  // controller: usernameField,
+                  controller: usernameField,
                   style: TextStyle(
                     fontSize: 18,
                     color: Colors.black,
@@ -137,9 +138,9 @@ class RecorderExampleState extends State<RecorderExample> {
                     helperText: 'contoh: jal098',
                     border: const OutlineInputBorder(),
                   ),
-                  validator: (value) =>
-                      value.length < 6  ? "Karakter kurang dari 6" : null,
-                  onSaved: (value) => usernameField.text = value,
+                  // validator: (value) =>
+                  //     value.length < 6 ? "Karakter kurang dari 6" : null,
+                  // onSaved: (value) => usernameField.text = value,
                 ),
                 // * Dropdown Jenis Kelamin
                 SizedBox(height: 20.0),
@@ -247,46 +248,46 @@ class RecorderExampleState extends State<RecorderExample> {
                     style: TextStyle(fontSize: 18),
                   ),
                   onPressed: () async {
-                    if (_formKey.currentState.validate()) {
-                      var now = new DateTime.now();
-                      var formatter = new DateFormat('yyyyMMdd');
-                      String _formattedDate = formatter.format(now);
-                      String _jenisKelamin;
-                      // * ganti kode jenis kelamin
-                      jenisKelaminUser.name == "Perempuan"
-                          ? _jenisKelamin = "f"
-                          : _jenisKelamin = "m";
-                      String _username = usernameField.text.toLowerCase();
-                      String _dialek = dialekField.text.toLowerCase();
-                      setState(() {
-                        indextranscript.number = 1;
-                      });
-                      int _index = indextranscript.number;
-                      String _dirname =
-                          "$_username\_$_jenisKelamin\_$_formattedDate\_$_transcript\_$_dialek\_hp";
-                      String _filename1 =
-                          "$_username\_$_jenisKelamin\_$_formattedDate\_";
-                      String _filename2 = "\_$_transcript\_$_dialek\_hp";
+                    // if (_formKey.currentState.validate()) {
+                    var now = new DateTime.now();
+                    var formatter = new DateFormat('yyyyMMdd');
+                    String _formattedDate = formatter.format(now);
+                    String _jenisKelamin;
+                    // * ganti kode jenis kelamin
+                    jenisKelaminUser.name == "Perempuan"
+                        ? _jenisKelamin = "f"
+                        : _jenisKelamin = "m";
+                    String _username = usernameField.text.toLowerCase();
+                    String _dialek = dialekField.text.toLowerCase();
+                    setState(() {
+                      indextranscript.number = 1;
+                    });
+                    int _index = indextranscript.number;
+                    String _dirname =
+                        "$_username\_$_jenisKelamin\_$_formattedDate\_$_transcript\_$_dialek\_hp";
+                    String _filename1 =
+                        "$_username\_$_jenisKelamin\_$_formattedDate\_";
+                    String _filename2 = "\_$_transcript\_$_dialek\_hp";
 
-                      // example: rut122_f_20201216_001_audiobuku_yogyakarta_hp
-                      setState(() {
-                        indextranscript.dirName = _dirname;
-                        indextranscript.fileName = [
-                          _filename1,
-                          _index.toString(),
-                          _filename2
-                        ];
-                        indextranscript.transcriptTitle = "$_transcript";
-                        indextranscript.userName = "$_username";
-                        indextranscript.dateTime = "$_formattedDate";
-                      });
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                RecorderPage(indextranscript: indextranscript)),
-                      );
-                    }
+                    // example: rut122_f_20201216_001_audiobuku_yogyakarta_hp
+                    setState(() {
+                      indextranscript.dirName = _dirname;
+                      indextranscript.fileName = [
+                        _filename1,
+                        _index.toString(),
+                        _filename2
+                      ];
+                      indextranscript.transcriptTitle = "$_transcript";
+                      indextranscript.userName = "$_username";
+                      indextranscript.dateTime = "$_formattedDate";
+                    });
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              RecorderPage(indextranscript: indextranscript)),
+                    );
+                    // }
                   },
                 ),
               ]),
@@ -371,9 +372,6 @@ class RecorderPageState extends State<RecorderPage> {
     _isButtonDisabled = false;
     _stateRecord = 0;
   }
-
-  GlobalKey<ScaffoldState> _key = new GlobalKey<ScaffoldState>();
-  // RecorderPageState({Key key, this.title}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -855,10 +853,12 @@ class RecorderPageState extends State<RecorderPage> {
       _current = result;
       _currentStatus = _current.status;
     });
-    _zipping();
+    await _zipping();
+    String zipSize = await dirStatSync(ziptranscript.zipDir);
   }
 
   Future _countDirs() async {
+    int totalSize;
     io.Directory appDocDirectory;
     if (io.Platform.isIOS) {
       appDocDirectory = await getApplicationDocumentsDirectory();
@@ -868,7 +868,7 @@ class RecorderPageState extends State<RecorderPage> {
     String directory = appDocDirectory.path;
 
     List<io.FileSystemEntity> dirList = io.Directory('$directory').listSync();
-    dirList.forEach((value) {
+    dirList.forEach((io.FileSystemEntity value) {
       String fileName = basename(value.path);
       List<String> filename = fileName.split('_');
 
@@ -878,10 +878,75 @@ class RecorderPageState extends State<RecorderPage> {
         dirNameList.add(fileName);
       }
 
+      // if ((fileName.endsWith('.zip')) &&
+      //     filename[0] == indextranscript.userName &&
+      //     filename[3] == indextranscript.transcriptTitle &&
+      //     value is io.File) {
+      //   totalSize = value.lengthSync();
+      //   print("namafile: $value");
+      //   print("filesize: $totalSize");
+      // }
+
+      // if (filename[0] == indextranscript.userName &&
+      //     filename[3] == indextranscript.transcriptTitle) {
+      //   if (fileName.endsWith('.zip') && value is io.File) {
+      //     // count
+      //     totalSize = value.lengthSync();
+      //     print("namafile: $value");
+      //     print("filesize: $totalSize");
+      //   } else {
+      //     dirNameList.add(fileName);
+      //   }
+      // }
+      // dirStatSync(directory);
+
       setState(() {
         ziptranscript.zipDir = directory;
       });
     });
+  }
+
+  // TODO: count .zip filesize
+  Future<String> dirStatSync(String dirPath) async {
+    int fileNum = 0;
+    int totalSize = 0;
+    var dir = io.Directory(dirPath);
+    try {
+      if (dir.existsSync()) {
+        dir
+            .listSync(recursive: false, followLinks: false)
+            .forEach((io.FileSystemEntity entity) {
+          if (entity is io.File && (entity.toString().endsWith('.zip\''))) {
+            // ! count only on username and transcript.
+            String fileName = basename(entity.toString());
+            List<String> filename = fileName.split('_');
+            if (filename[0] == indextranscript.userName &&
+                filename[3] == indextranscript.transcriptTitle) {
+              print(basename(entity.toString()));
+              fileNum++;
+              totalSize += entity.lengthSync();
+            }
+          }
+        });
+      }
+    } catch (e) {
+      print(e.toString());
+    }
+    // totalSize = formatBytes(totalSize, 0);
+    // return {'fileNum': fileNum, 'size': totalSize};
+    // return totalSize;
+    print('size Bytes: ${formatBytes(totalSize, 0)}');
+    return "${formatBytes(totalSize, 0)}";
+    // print('fileNum : $fileNum, size: $totalSize');
+  }
+
+  static String formatBytes(int bytes, int decimals) {
+    if (bytes <= 0) return "0 B";
+    const suffixes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+    var i = (log(bytes) / log(1024)).floor();
+    return ((bytes / pow(1024, i)).toStringAsFixed(decimals)) +
+        ' ' +
+        suffixes[i];
   }
 
   Future<String> _countFiles() async {
@@ -918,6 +983,7 @@ class RecorderPageState extends State<RecorderPage> {
           _isButtonDisabled = false; // * button kembali aktif
         });
         _countDirs();
+        // dirStatSync(ziptranscript.zipDir);
         onNextTranscript(); // * auto next after stop pressed
 
       } else {
