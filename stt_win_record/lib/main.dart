@@ -13,9 +13,9 @@ import 'package:csv/csv.dart';
 import 'dart:async' show Future;
 import 'package:flutter_archive/flutter_archive.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+// import 'src/validation.dart';
 
 void main() {
-  // SystemChrome.setEnabledSystemUIOverlays([]);
   return runApp(new MyApp());
 }
 
@@ -38,13 +38,15 @@ class IndexTranscript {
       this.dirName,
       this.fileName,
       this.transcriptTitle,
-      this.userName});
+      this.userName,
+      this.dateTime});
   int number; // format number 001, 0001, 01, ...
   String dirName; // custom directory name
   // String fileName; // custom file name (dirName + increment index)
   List<String> fileName;
   String transcriptTitle;
   String userName;
+  String dateTime;
 }
 
 class MyApp extends StatefulWidget {
@@ -74,6 +76,7 @@ class RecorderExample extends StatefulWidget {
 }
 
 class RecorderExampleState extends State<RecorderExample> {
+  final _formKey = GlobalKey<FormState>();
   User jenisKelaminUser;
   List<User> users = <User>[User('Perempuan'), User('Laki-laki')];
 
@@ -82,7 +85,8 @@ class RecorderExampleState extends State<RecorderExample> {
       dirName: 'dirName',
       fileName: ['fileName1', 'index', 'fileName2'],
       transcriptTitle: 'audiobuku.csv',
-      userName: 'user000'); // * initiation
+      userName: 'user000',
+      dateTime: 'YYYYMMDD'); // * initiation
 
   // * Form
   TextEditingController usernameField = TextEditingController();
@@ -108,7 +112,9 @@ class RecorderExampleState extends State<RecorderExample> {
 
   @override
   Widget build(BuildContext context) {
-    return new Center(
+    return Form(
+      key: _formKey,
+      // return new Center(
       child: new Padding(
         padding: new EdgeInsets.all(24.0),
         child: SingleChildScrollView(
@@ -118,8 +124,8 @@ class RecorderExampleState extends State<RecorderExample> {
                 SizedBox(height: 0.0),
                 // * Text Box Username
                 SizedBox(height: 20.0),
-                TextField(
-                  controller: usernameField,
+                TextFormField(
+                  // controller: usernameField,
                   style: TextStyle(
                     fontSize: 18,
                     color: Colors.black,
@@ -131,6 +137,9 @@ class RecorderExampleState extends State<RecorderExample> {
                     helperText: 'contoh: jal098',
                     border: const OutlineInputBorder(),
                   ),
+                  validator: (value) =>
+                      value.length < 6  ? "Karakter kurang dari 6" : null,
+                  onSaved: (value) => usernameField.text = value,
                 ),
                 // * Dropdown Jenis Kelamin
                 SizedBox(height: 20.0),
@@ -238,49 +247,53 @@ class RecorderExampleState extends State<RecorderExample> {
                     style: TextStyle(fontSize: 18),
                   ),
                   onPressed: () async {
-                    var now = new DateTime.now();
-                    var formatter = new DateFormat('yyyyMMdd');
-                    String _formattedDate = formatter.format(now);
-                    String _jenisKelamin;
-                    // * ganti kode jenis kelamin
-                    jenisKelaminUser.name == "Perempuan"
-                        ? _jenisKelamin = "f"
-                        : _jenisKelamin = "m";
-                    String _username = usernameField.text.toLowerCase();
-                    String _dialek = dialekField.text.toLowerCase();
-                    setState(() {
-                      indextranscript.number = 1;
-                    });
-                    int _index = indextranscript.number;
-                    String _dirname =
-                        "$_username\_$_jenisKelamin\_$_formattedDate\_$_transcript\_$_dialek\_hp";
-                    String _filename1 =
-                        "$_username\_$_jenisKelamin\_$_formattedDate\_";
-                    String _filename2 = "\_$_transcript\_$_dialek\_hp";
+                    if (_formKey.currentState.validate()) {
+                      var now = new DateTime.now();
+                      var formatter = new DateFormat('yyyyMMdd');
+                      String _formattedDate = formatter.format(now);
+                      String _jenisKelamin;
+                      // * ganti kode jenis kelamin
+                      jenisKelaminUser.name == "Perempuan"
+                          ? _jenisKelamin = "f"
+                          : _jenisKelamin = "m";
+                      String _username = usernameField.text.toLowerCase();
+                      String _dialek = dialekField.text.toLowerCase();
+                      setState(() {
+                        indextranscript.number = 1;
+                      });
+                      int _index = indextranscript.number;
+                      String _dirname =
+                          "$_username\_$_jenisKelamin\_$_formattedDate\_$_transcript\_$_dialek\_hp";
+                      String _filename1 =
+                          "$_username\_$_jenisKelamin\_$_formattedDate\_";
+                      String _filename2 = "\_$_transcript\_$_dialek\_hp";
 
-                    // example: rut122_f_20201216_001_audiobuku_yogyakarta_hp
-                    setState(() {
-                      indextranscript.dirName = _dirname;
-                      indextranscript.fileName = [
-                        _filename1,
-                        _index.toString(),
-                        _filename2
-                      ];
-                      indextranscript.transcriptTitle = "$_transcript";
-                      indextranscript.userName = "$_username";
-                    });
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              RecorderPage(indextranscript: indextranscript)),
-                    );
+                      // example: rut122_f_20201216_001_audiobuku_yogyakarta_hp
+                      setState(() {
+                        indextranscript.dirName = _dirname;
+                        indextranscript.fileName = [
+                          _filename1,
+                          _index.toString(),
+                          _filename2
+                        ];
+                        indextranscript.transcriptTitle = "$_transcript";
+                        indextranscript.userName = "$_username";
+                        indextranscript.dateTime = "$_formattedDate";
+                      });
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                RecorderPage(indextranscript: indextranscript)),
+                      );
+                    }
                   },
                 ),
               ]),
         ),
       ),
     );
+    // );
   }
 }
 
@@ -359,251 +372,393 @@ class RecorderPageState extends State<RecorderPage> {
     _stateRecord = 0;
   }
 
+  GlobalKey<ScaffoldState> _key = new GlobalKey<ScaffoldState>();
+  // RecorderPageState({Key key, this.title}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
       home: new Scaffold(
-        appBar: AppBar(title: Text(indextranscript.transcriptTitle)),
+        appBar: AppBar(
+          title: Text(indextranscript.transcriptTitle),
+          backgroundColor: Color.fromARGB(255, 39, 169, 225),
+        ),
         body: SafeArea(
           child: new Padding(
             padding: new EdgeInsets.all(1.0),
-            child: new Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  new Container(
-                    width: MediaQuery.of(context).size.width * 0.85,
-                    height: MediaQuery.of(context).size.height * 0.05,
-                    child: Flexible(
+            child: SingleChildScrollView(
+              child: new Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    // * nama file transcript
+                    new Container(
+                      width: MediaQuery.of(context).size.width * 0.85,
+                      height: MediaQuery.of(context).size.height * 0.05,
+                      padding: EdgeInsets.all(10.0),
+                      // child: Flexible(
                       child: new Text(
                         '${indextranscript.fileName.join()}',
                         textAlign: TextAlign.center,
                       ),
+                      // ),
                     ),
-                  ),
-                  // * TEXT TRANSCRIPT
-                  new Container(
-                    width: MediaQuery.of(context).size.width * 0.85,
-                    height: MediaQuery.of(context).size.height * 0.5,
-                    child: FutureBuilder(
-                        future: loadAsset(),
-                        builder:
-                            (BuildContext context, AsyncSnapshot snapshot) {
-                          // this condition is important
-                          if (snapshot.data == null) {
-                            return Center(
-                              child: Text('loading data'),
-                            );
-                          } else {
-                            return Center(
-                                // karena newline tidak terbaca sebagai split
-                                child: Text(
-                              snapshot.data[(indextranscript.number * 2) + 1],
-                              style: TextStyle(height: 1.25, fontSize: 32),
-                            ));
-                          }
-                        }),
-                  ),
+                    // * Indikator bar
+                    // Padding(
+                    // padding: const EdgeInsets.all(8.0),
+                    new Container(
+                      child: SizedBox(
+                          width: MediaQuery.of(context).size.width * 1,
+                          height: MediaQuery.of(context).size.height * 0.02,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: colorIndicator[_stateRecord],
+                            ),
+                          )),
+                    ),
+                    // ),
+                    // * TEXT TRANSCRIPT
+                    new Container(
+                      width: MediaQuery.of(context).size.width * 0.85,
+                      height: MediaQuery.of(context).size.height * 0.4,
+                      child: FutureBuilder(
+                          future: loadAsset(),
+                          builder:
+                              (BuildContext context, AsyncSnapshot snapshot) {
+                            // this condition is important
+                            if (snapshot.data == null) {
+                              return Center(
+                                child: Text('loading data'),
+                              );
+                            } else {
+                              return Center(
+                                  // karena newline tidak terbaca sebagai split
+                                  child: Text(
+                                snapshot.data[(indextranscript.number * 2) + 1],
+                                style: TextStyle(height: 1.25, fontSize: 32),
+                              ));
+                            }
+                          }),
+                    ),
 
-                  // * Indikator bar
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: SizedBox(
-                        width: MediaQuery.of(context).size.width * 1,
-                        height: MediaQuery.of(context).size.height * 0.02,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: colorIndicator[_stateRecord],
-                          ),
-                        )),
-                  ),
-                  new Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.all(0),
+                    new SizedBox(
+                      height: 65.0,
+                    ),
+                    new Container(
+                      // padding: EdgeInsets.all(40.0),
+                      // alignment: Alignment.bottomCenter,
+                      // child: Align(
+                      //   alignment: FractionalOffset.bottomCenter,
+                      // child: new Row(
+                      //   // crossAxisAlignment: CrossAxisAlignment.center,
+                      //   // mainAxisSize: MainAxisSize.max,
+                      //   mainAxisAlignment: MainAxisAlignment.center,
+                      //   children: <Widget>[
+                      //     Padding(
+                      //       // RECORD button
+                      //       padding: const EdgeInsets.all(8.0),
+                      child: new FlatButton(
+                        minWidth: MediaQuery.of(context).size.width * 0.2,
+                        height: MediaQuery.of(context).size.height * 0.2,
+                        onPressed: _isButtonDisabled
+                            ? null
+                            : () {
+                                switch (_currentStatus) {
+                                  case RecordingStatus.Unset:
+                                    {
+                                      onRecordTranscript();
+                                      break;
+                                    }
+                                  case RecordingStatus.Recording:
+                                    {
+                                      _stop();
+                                      break;
+                                    }
+                                  case RecordingStatus.Stopped:
+                                    {
+                                      onRecordTranscript();
+                                      break;
+                                    }
+                                  default:
+                                    break;
+                                }
+                              },
+                        child: _stateRecord == 0
+                            ? Stack(
+                                alignment: Alignment.center,
+                                children: <Widget>[
+                                  new Icon(
+                                    Icons.stop_circle,
+                                    color: Colors.redAccent,
+                                    size: MediaQuery.of(context).size.width *
+                                        0.25,
+                                  ),
+                                  new Text(
+                                    "record",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Stack(
+                                alignment: Alignment.center,
+                                children: <Widget>[
+                                  new Icon(
+                                    Icons.stop_rounded,
+                                    size:
+                                        MediaQuery.of(context).size.width * 0.3,
+                                  ),
+                                  new Text(
+                                    "stop",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                        // new Icon(
+                        //     Icons.stop_outlined,
+                        //     size: MediaQuery.of(context).size.width * 0.25,
+                        //   ),
+                      ),
+                      //     ),
+                      //   ],
+                      // ),
+                    ),
+                    // new SizedBox(
+                    new SizedBox(
+                      height: 15.0,
+                    ),
+                    // ),
+                    new Row(
+                      // crossAxisAlignment: CrossAxisAlignment.center,
+                      // mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
                         // * PREVIOUS BUTTON
-                        child: new FlatButton(
+                        new FlatButton(
+                          minWidth: MediaQuery.of(context).size.width * 0.1,
+                          height: MediaQuery.of(context).size.height * 0.05,
                           onPressed: _stateRecord == 0
                               ? () {
                                   onPreviousTranscript();
                                 }
                               : null, //
                           child: new Icon(Icons.navigate_before),
-                          color: _stateRecord == 0
-                              ? Colors.lightBlue
-                              : Colors.blueGrey,
+                          // color: _stateRecord == 0
+                          //     ? Colors.lightBlue
+                          //     : Colors.blueGrey,
                         ),
-                      ),
-                      Padding(
-                        // RECORD button
-                        padding: const EdgeInsets.all(8.0),
-                        child: new FlatButton(
-                          onPressed: _isButtonDisabled
-                              ? null
-                              : () {
-                                  switch (_currentStatus) {
-                                    case RecordingStatus.Unset:
-                                      {
-                                        onRecordTranscript();
-                                        break;
-                                      }
-                                    case RecordingStatus.Recording:
-                                      {
-                                        _stop();
-                                        break;
-                                      }
-                                    case RecordingStatus.Stopped:
-                                      {
-                                        onRecordTranscript();
-                                        break;
-                                      }
-                                    default:
-                                      break;
-                                  }
-                                },
-                          child: _stateRecord == 0
-                              ? new Icon(
-                                  Icons.stop_circle,
-                                  color: Colors.redAccent,
-                                  size: 50.0,
-                                )
-                              : new Icon(
-                                  Icons.stop_outlined,
-                                  size: 50.0,
-                                ),
+                        SizedBox(
+                          width: 10.0,
                         ),
-                      ),
-                      // * Next Transcript
-                      new FlatButton(
-                        onPressed: _stateRecord == 0
-                            ? () {
-                                onNextTranscript();
-                              }
-                            : null, //
-                        child: new Icon(Icons.navigate_next),
-                        color: _stateRecord == 0
-                            ? Colors.lightBlue
-                            : Colors.blueGrey,
-                      ),
-                    ],
-                  ),
-                  FutureBuilder(
-                      future: _stateRecord == 0 ? _countFiles() : null,
-                      builder: (BuildContext context, AsyncSnapshot snapshot) {
-                        if (snapshot.data == null) {
-                          return Center(
-                            child:
-                                Text('jumlah terbaca: 0 / $transcriptLength'),
-                          );
-                        } else {
-                          return Center(
-                            child: Text(
-                                'jumlah terbaca: ${snapshot.data} / $transcriptLength'),
-                          );
-                        }
-                      }),
-                  new Container(
-                    width: MediaQuery.of(context).size.width * 0.35,
-                    child: TextField(
-                      controller: jumpTranscriptController,
-                      decoration: new InputDecoration(
-                        labelText: "jump",
-                        hintText: "1 - $transcriptLength",
-                        contentPadding: EdgeInsets.all(10.0),
-                        suffixIcon: IconButton(
-                            onPressed: () {
-                              1 <= int.parse(jumpTranscriptController.text) &&
-                                      int.parse(
-                                              jumpTranscriptController.text) <=
-                                          transcriptLength
-                                  ? () {
-                                      Fluttertoast.showToast(
-                                        msg:
-                                            "${jumpTranscriptController.text}_${indextranscript.transcriptTitle}",
-                                        toastLength: Toast.LENGTH_LONG,
-                                        gravity: ToastGravity.CENTER,
-                                        timeInSecForIosWeb: 1,
-                                        backgroundColor: Colors.greenAccent,
-                                        textColor: Colors.white,
-                                        fontSize: 12.0,
-                                      );
-                                      setState(() {
-                                        indextranscript.number = int.parse(
-                                            jumpTranscriptController.text);
-                                        indextranscript.fileName[1] =
-                                            indextranscript.number.toString();
-                                      });
-                                    }()
-                                  : Fluttertoast.showToast(
-                                      msg: "angka melebihi batas",
-                                      toastLength: Toast.LENGTH_SHORT,
-                                      gravity: ToastGravity.CENTER,
-                                      timeInSecForIosWeb: 1,
-                                      backgroundColor: Colors.redAccent,
-                                      textColor: Colors.white,
-                                      fontSize: 16.0,
-                                    );
-                            },
-                            icon: Icon(Icons.check_circle_outline_rounded)),
-                      ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: <TextInputFormatter>[
-                        FilteringTextInputFormatter.digitsOnly
+                        // * Next Transcript
+                        new FlatButton(
+                          minWidth: MediaQuery.of(context).size.width * 0.1,
+                          height: MediaQuery.of(context).size.height * 0.05,
+                          onPressed: _stateRecord == 0
+                              ? () {
+                                  onNextTranscript();
+                                }
+                              : null, //
+                          child: new Icon(Icons.navigate_next),
+                          // color: _stateRecord == 0
+                          //     ? Colors.lightBlue
+                          //     : Colors.blueGrey,
+                        ),
                       ],
                     ),
-                  ),
-                ]),
-          ),
-        ),
-        drawer: Drawer(
-          child: Scrollbar(
-            controller: controller,
-            child: ListView.builder(
-              controller: controller,
-              itemCount: transcriptLength,
-              itemBuilder: (context, index) {
-                return Card(
-                  child: FutureBuilder(
-                      future: loadAsset(),
-                      builder: (BuildContext context, AsyncSnapshot snapshot) {
-                        if (snapshot.data == null) {
-                          return Card(
-                              child: ListTile(
-                            title: Text("${index + 1}"),
-                          ));
-                        } else {
-                          return Center(
-                              child: ListTile(
-                            title: Text(
-                                "${index + 1}. ${snapshot.data[((index + 1) * 2) + 1]}"),
-                            onTap: () {
-                              Navigator.of(context).pop();
-                              setState(() {
-                                indextranscript.number = index + 1;
-                                // 2. filename.update
-                                indextranscript.fileName[1] =
-                                    indextranscript.number.toString();
-                              });
-
-                              Fluttertoast.showToast(
-                                msg:
-                                    "${index + 1}_${indextranscript.transcriptTitle}",
-                                toastLength: Toast.LENGTH_LONG,
-                                gravity: ToastGravity.CENTER,
-                                timeInSecForIosWeb: 1,
-                                backgroundColor: Colors.greenAccent,
-                                textColor: Colors.white,
-                                fontSize: 12.0,
-                              );
-                            },
-                          ));
-                        }
-                      }),
-                );
-              },
+                  ]),
             ),
           ),
         ),
+        // endDrawerEnableOpenDragGesture: true,
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
+                child: Text(
+                  'STATUS - ${indextranscript.dateTime}\n\nusername: ${indextranscript.userName}\njudul transcript: ${indextranscript.transcriptTitle}',
+                  style: TextStyle(color: Colors.white),
+                ),
+                decoration: BoxDecoration(
+                  color: Color.fromARGB(255, 39, 169, 225),
+                ),
+              ),
+              FutureBuilder(
+                  future: _stateRecord == 0 ? _countFiles() : null,
+                  builder: (BuildContext context, AsyncSnapshot snapshot) {
+                    if (snapshot.data == null) {
+                      return Center(
+                        child: Text('jumlah terbaca: 0 / $transcriptLength'),
+                      );
+                    } else {
+                      return Center(
+                        child: Text(
+                            'jumlah terbaca: ${snapshot.data} / $transcriptLength'),
+                      );
+                    }
+                  }),
+              SizedBox(
+                height: 20.0,
+              ),
+              // * jump to number transcript
+              new Container(
+                // width: MediaQuery.of(context).size.width * 0.35,
+                padding: EdgeInsets.symmetric(horizontal: 90.0),
+                child: TextField(
+                  controller: jumpTranscriptController,
+                  onSubmitted: (value) {
+                    1 <= int.parse(value) &&
+                            int.parse(value) <= transcriptLength
+                        ? () {
+                            setState(() {
+                              indextranscript.number = int.parse(value);
+                              indextranscript.fileName[1] =
+                                  indextranscript.number.toString();
+                            });
+                            Fluttertoast.showToast(
+                              msg:
+                                  "${value}_${indextranscript.transcriptTitle}",
+                              toastLength: Toast.LENGTH_LONG,
+                              gravity: ToastGravity.CENTER,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: Colors.greenAccent,
+                              textColor: Colors.white,
+                              fontSize: 12.0,
+                            );
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => RecorderPage(
+                                      indextranscript: indextranscript)),
+                            );
+                          }()
+                        : Fluttertoast.showToast(
+                            msg: "angka melebihi batas",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.CENTER,
+                            timeInSecForIosWeb: 1,
+                            backgroundColor: Colors.redAccent,
+                            textColor: Colors.white,
+                            fontSize: 16.0,
+                          );
+                  },
+                  decoration: new InputDecoration(
+                    labelText: "jump",
+                    hintText: "1 - $transcriptLength",
+                    // // contentPadding: EdgeInsets.all(10.0),
+                    // suffixIcon: IconButton(
+                    //     onPressed: () {
+                    //       1 <= int.parse(jumpTranscriptController.text) &&
+                    //               int.parse(jumpTranscriptController
+                    //                       .text) <=
+                    //                   transcriptLength
+                    //           ? () {
+                    //               Fluttertoast.showToast(
+                    //                 msg:
+                    //                     "${jumpTranscriptController.text}_${indextranscript.transcriptTitle}",
+                    //                 toastLength: Toast.LENGTH_LONG,
+                    //                 gravity: ToastGravity.CENTER,
+                    //                 timeInSecForIosWeb: 1,
+                    //                 backgroundColor: Colors.greenAccent,
+                    //                 textColor: Colors.white,
+                    //                 fontSize: 12.0,
+                    //               );
+                    //               setState(() {
+                    //                 indextranscript.number = int.parse(
+                    //                     jumpTranscriptController.text);
+                    //                 indextranscript.fileName[1] =
+                    //                     indextranscript.number.toString();
+                    //               });
+                    //             }()
+                    //           : Fluttertoast.showToast(
+                    //               msg: "angka melebihi batas",
+                    //               toastLength: Toast.LENGTH_SHORT,
+                    //               gravity: ToastGravity.CENTER,
+                    //               timeInSecForIosWeb: 1,
+                    //               backgroundColor: Colors.redAccent,
+                    //               textColor: Colors.white,
+                    //               fontSize: 16.0,
+                    //             );
+                    //     },
+                    //     icon: Icon(Icons.arrow_forward_rounded)),
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly
+                  ],
+                ),
+              ),
+            ],
+          ),
+          // new Container(
+          //   child: FutureBuilder(
+          //       future: _stateRecord == 0 ? _countFiles() : null,
+          //       builder: (BuildContext context, AsyncSnapshot snapshot) {
+          //         if (snapshot.data == null) {
+          //           return Center(
+          //             child: Text('jumlah terbaca: 0 / $transcriptLength'),
+          //           );
+          //         } else {
+          //           return Center(
+          //             child: Text(
+          //                 'jumlah terbaca: ${snapshot.data} / $transcriptLength'),
+          //           );
+          //         }
+          //       }),
+        ),
+
+        // child: Scrollbar(
+        //   controller: controller,
+        //   child: ListView.builder(
+        //     controller: controller,
+        //     itemCount: transcriptLength,
+        //     itemBuilder: (context, index) {
+        //       return Card(
+        //         child: FutureBuilder(
+        //             future: loadAsset(),
+        //             builder: (BuildContext context, AsyncSnapshot snapshot) {
+        //               if (snapshot.data == null) {
+        //                 return Card(
+        //                     child: ListTile(
+        //                   title: Text("${index + 1}"),
+        //                 ));
+        //               } else {
+        //                 return Center(
+        //                     child: ListTile(
+        //                   title: Text(
+        //                       "${index + 1}. ${snapshot.data[((index + 1) * 2) + 1]}"),
+        //                   onTap: () {
+        //                     Navigator.of(context).pop();
+        //                     setState(() {
+        //                       indextranscript.number = index + 1;
+        //                       // 2. filename.update
+        //                       indextranscript.fileName[1] =
+        //                           indextranscript.number.toString();
+        //                     });
+
+        //                     Fluttertoast.showToast(
+        //                       msg:
+        //                           "${index + 1}_${indextranscript.transcriptTitle}",
+        //                       toastLength: Toast.LENGTH_LONG,
+        //                       gravity: ToastGravity.CENTER,
+        //                       timeInSecForIosWeb: 1,
+        //                       backgroundColor: Colors.greenAccent,
+        //                       textColor: Colors.white,
+        //                       fontSize: 12.0,
+        //                     );
+        //                   },
+        //                 ));
+        //               }
+        //             }),
+        //       );
+        //     },
+        //   ),
+        // ),
       ),
     );
   }
