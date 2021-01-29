@@ -2,6 +2,11 @@ import 'dart:async';
 import 'dart:io' as io;
 import 'dart:math';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_countdown_timer/countdown.dart';
+import 'package:flutter_countdown_timer/countdown_controller.dart';
+import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
+import 'package:flutter_countdown_timer/current_remaining_time.dart';
+import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:intl/intl.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:file/local.dart';
@@ -26,11 +31,17 @@ class User {
 }
 
 class ZipTranscript {
-  ZipTranscript({this.storeDir, this.zipDir, this.zipName, this.zipDateTime});
+  ZipTranscript(
+      {this.storeDir,
+      this.zipDir,
+      this.zipName,
+      this.zipDateTime,
+      this.zipSize});
   String storeDir;
   String zipDir;
   String zipName;
   String zipDateTime;
+  String zipSize;
 }
 
 class IndexTranscript {
@@ -317,6 +328,9 @@ class RecorderPage extends StatefulWidget {
 }
 
 class RecorderPageState extends State<RecorderPage> {
+  int endTime = DateTime.now().millisecondsSinceEpoch + 0 * 3;
+  CountdownController countdownController;
+  CountdownTimerController countdownTimerController;
   IndexTranscript indextranscript;
   RecorderPageState(this.indextranscript);
   ScrollController controller;
@@ -349,6 +363,7 @@ class RecorderPageState extends State<RecorderPage> {
     zipDir: "destination_directory_zip",
     zipName: "directory.zip",
     zipDateTime: "yyyyMMdd_HHmmss",
+    zipSize: "0",
   );
 
   Future<List<String>> loadAsset() async {
@@ -437,7 +452,51 @@ class RecorderPageState extends State<RecorderPage> {
                             }
                           }),
                     ),
-
+                    // * Indikator bar
+                    new Container(
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: <Widget>[
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * 1,
+                            height: MediaQuery.of(context).size.height * 0.08,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: colorIndicator[_stateRecord],
+                              ),
+                            ),
+                            // new Text("A"),
+                          ),
+                          CountdownTimer(
+                            controller: countdownTimerController,
+                            endTime: endTime,
+                            // onEnd: () {
+                            //   endTime = DateTime.now().millisecondsSinceEpoch +
+                            //       1000 * 3;
+                            // },
+                            // textStyle: TextStyle(fontSize: 18),
+                            widgetBuilder: (_, CurrentRemainingTime time) {
+                              if (_stateRecord == 0) {
+                                return Text(
+                                    'Mulai baca saat warna hijau muncul!');
+                              } else if (time == null) {
+                                return Text('Mulai!');
+                              } else {
+                                return Text("${time.sec}");
+                              }
+                              // if (time == null) {
+                              //   return Text('Mulai!');
+                              // } else if (_stateRecord == 0) {
+                              //   return Text('Selesai');
+                              // } else
+                              //   return Text("${time.sec}");
+                            },
+                          ),
+                          // Countdown(countdownController: countdownController),
+                          // new Text("3..2..1"),
+                        ],
+                      ),
+                    ),
                     new SizedBox(
                       height: 65.0,
                     ),
@@ -463,16 +522,29 @@ class RecorderPageState extends State<RecorderPage> {
                                 switch (_currentStatus) {
                                   case RecordingStatus.Unset:
                                     {
+                                      // countdownController.start();
+                                      endTime = DateTime.now()
+                                              .millisecondsSinceEpoch +
+                                          1000 * 3;
                                       onRecordTranscript();
                                       break;
                                     }
                                   case RecordingStatus.Recording:
                                     {
+                                      // countdownController.stop();
+                                      endTime = DateTime.now()
+                                              .millisecondsSinceEpoch +
+                                          1000 * 3;
+                                      // countdownTimerController.dispose();
                                       _stop();
                                       break;
                                     }
                                   case RecordingStatus.Stopped:
                                     {
+                                      // countdownController.start();
+                                      endTime = DateTime.now()
+                                              .millisecondsSinceEpoch +
+                                          1000 * 3;
                                       onRecordTranscript();
                                       break;
                                     }
@@ -586,6 +658,23 @@ class RecorderPageState extends State<RecorderPage> {
                   color: Color.fromARGB(255, 39, 169, 225),
                 ),
               ),
+
+              new FlatButton(
+                // minWidth: MediaQuery.of(context).size.width * 0.1,
+                // height: MediaQuery.of(context).size.height * 0.05,
+                onPressed: () {
+                  _countDirs();
+                  dirStatSync(ziptranscript.zipDir);
+                  // setState(() {
+                  //   ziptranscript.zipSize = zipSize;
+                  // });
+                }, //
+                child: new Icon(Icons.refresh),
+                // color: _stateRecord == 0
+                //     ? Colors.lightBlue
+                //     : Colors.blueGrey,
+                color: Colors.black12,
+              ),
               FutureBuilder(
                   future: _stateRecord == 0 ? _countFiles() : null,
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -600,6 +689,11 @@ class RecorderPageState extends State<RecorderPage> {
                       );
                     }
                   }),
+              SizedBox(
+                height: 10.0,
+              ),
+              new Text("file size: ${ziptranscript.zipSize}",
+                  textAlign: TextAlign.center),
               SizedBox(
                 height: 20.0,
               ),
@@ -620,7 +714,7 @@ class RecorderPageState extends State<RecorderPage> {
                             });
                             Fluttertoast.showToast(
                               msg:
-                                  "${value}_${indextranscript.transcriptTitle}",
+                                  "no. $value ${indextranscript.transcriptTitle}",
                               toastLength: Toast.LENGTH_LONG,
                               gravity: ToastGravity.CENTER,
                               timeInSecForIosWeb: 1,
@@ -636,7 +730,7 @@ class RecorderPageState extends State<RecorderPage> {
                             );
                           }()
                         : Fluttertoast.showToast(
-                            msg: "angka melebihi batas",
+                            msg: "nomor melebihi batas",
                             toastLength: Toast.LENGTH_SHORT,
                             gravity: ToastGravity.CENTER,
                             timeInSecForIosWeb: 1,
@@ -646,7 +740,7 @@ class RecorderPageState extends State<RecorderPage> {
                           );
                   },
                   decoration: new InputDecoration(
-                    labelText: "jump",
+                    labelText: "pilih nomor transcript",
                     hintText: "1 - $transcriptLength",
                     // // contentPadding: EdgeInsets.all(10.0),
                     // suffixIcon: IconButton(
@@ -855,6 +949,9 @@ class RecorderPageState extends State<RecorderPage> {
     });
     await _zipping();
     String zipSize = await dirStatSync(ziptranscript.zipDir);
+    setState(() {
+      ziptranscript.zipSize = zipSize;
+    });
   }
 
   Future _countDirs() async {
@@ -935,7 +1032,10 @@ class RecorderPageState extends State<RecorderPage> {
     // totalSize = formatBytes(totalSize, 0);
     // return {'fileNum': fileNum, 'size': totalSize};
     // return totalSize;
-    print('size Bytes: ${formatBytes(totalSize, 0)}');
+    // print('size Bytes: ${formatBytes(totalSize, 0)}');
+    setState(() {
+      ziptranscript.zipSize = "${formatBytes(totalSize, 0)}";
+    });
     return "${formatBytes(totalSize, 0)}";
     // print('fileNum : $fileNum, size: $totalSize');
   }
