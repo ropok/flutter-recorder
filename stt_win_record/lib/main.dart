@@ -19,7 +19,7 @@ import 'package:csv/csv.dart';
 import 'dart:async' show Future;
 import 'package:flutter_archive/flutter_archive.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-// import 'src/validation.dart';
+import 'util/validators.dart';
 
 void main() {
   return runApp(new MyApp());
@@ -51,7 +51,8 @@ class IndexTranscript {
       this.fileName,
       this.transcriptTitle,
       this.userName,
-      this.dateTime});
+      this.dateTime,
+      this.dialek});
   int number; // format number 001, 0001, 01, ...
   String dirName; // custom directory name
   // String fileName; // custom file name (dirName + increment index)
@@ -59,6 +60,7 @@ class IndexTranscript {
   String transcriptTitle;
   String userName;
   String dateTime;
+  String dialek;
 }
 
 class MyApp extends StatefulWidget {
@@ -98,7 +100,8 @@ class RecorderExampleState extends State<RecorderExample> {
       fileName: ['fileName1', 'index', 'fileName2'],
       transcriptTitle: 'audiobuku.csv',
       userName: 'user000',
-      dateTime: 'YYYYMMDD'); // * initiation
+      dateTime: 'YYYYMMDD',
+      dialek: 'dialek'); // * initiation
 
   // * Form
   TextEditingController usernameField = TextEditingController();
@@ -134,10 +137,11 @@ class RecorderExampleState extends State<RecorderExample> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 SizedBox(height: 0.0),
-                // * Text Box Username
                 SizedBox(height: 20.0),
+                // * Text Box Username
                 TextFormField(
                   controller: usernameField,
+                  maxLength: 6,
                   style: TextStyle(
                     fontSize: 18,
                     color: Colors.black,
@@ -145,10 +149,12 @@ class RecorderExampleState extends State<RecorderExample> {
                   decoration: InputDecoration(
                     labelText: 'username',
                     icon: Icon(Icons.supervisor_account),
-                    hintText: '6 digit username. contoh: jal098',
-                    helperText: 'contoh: jal098',
+                    hintText: '6 digit huruf kecil. contoh: jal098',
+                    hintStyle: TextStyle(fontSize: 14.0),
+                    helperText: '6 digit, contoh: jal098',
                     border: const OutlineInputBorder(),
                   ),
+                  validator: validateUsername,
                   // validator: (value) =>
                   //     value.length < 6 ? "Karakter kurang dari 6" : null,
                   // onSaved: (value) => usernameField.text = value,
@@ -181,7 +187,7 @@ class RecorderExampleState extends State<RecorderExample> {
                     )),
                 // * Text Box Dialek
                 SizedBox(height: 20.0),
-                TextField(
+                TextFormField(
                   controller: dialekField,
                   style: TextStyle(
                     fontSize: 18,
@@ -190,10 +196,12 @@ class RecorderExampleState extends State<RecorderExample> {
                   decoration: InputDecoration(
                     labelText: 'dialek',
                     icon: Icon(Icons.record_voice_over),
-                    hintText: '',
-                    helperText: '',
+                    hintText: 'asal daerah atau dialek',
+                    hintStyle: TextStyle(fontSize: 14.0),
+                    helperText: 'contoh: jogja, batak, lampung, dll',
                     border: const OutlineInputBorder(),
                   ),
+                  validator: validateDialek,
                 ),
                 // * Dropdown transcript
                 SizedBox(height: 10.0),
@@ -259,46 +267,49 @@ class RecorderExampleState extends State<RecorderExample> {
                     style: TextStyle(fontSize: 18),
                   ),
                   onPressed: () async {
-                    // if (_formKey.currentState.validate()) {
-                    var now = new DateTime.now();
-                    var formatter = new DateFormat('yyyyMMdd');
-                    String _formattedDate = formatter.format(now);
-                    String _jenisKelamin;
-                    // * ganti kode jenis kelamin
-                    jenisKelaminUser.name == "Perempuan"
-                        ? _jenisKelamin = "f"
-                        : _jenisKelamin = "m";
-                    String _username = usernameField.text.toLowerCase();
-                    String _dialek = dialekField.text.toLowerCase();
-                    setState(() {
-                      indextranscript.number = 1;
-                    });
-                    int _index = indextranscript.number;
-                    String _dirname =
-                        "$_username\_$_jenisKelamin\_$_formattedDate\_$_transcript\_$_dialek\_hp";
-                    String _filename1 =
-                        "$_username\_$_jenisKelamin\_$_formattedDate\_";
-                    String _filename2 = "\_$_transcript\_$_dialek\_hp";
+                    if (_formKey.currentState.validate()) {
+                      var now = new DateTime.now();
+                      var formatter = new DateFormat('yyyyMMdd');
+                      String _formattedDate = formatter.format(now);
+                      String _jenisKelamin;
+                      // * ganti kode jenis kelamin
+                      jenisKelaminUser.name == "Perempuan"
+                          ? _jenisKelamin = "f"
+                          : _jenisKelamin = "m";
+                      String _username = usernameField.text.toLowerCase();
+                      String _dialek = dialekField.text.toLowerCase();
+                      // * hilangin spasi dari inputan dialek
+                      _dialek = _dialek.replaceAll(new RegExp(r'\s+'), "");
+                      setState(() {
+                        indextranscript.number = 1;
+                      });
+                      int _index = indextranscript.number;
+                      String _dirname =
+                          "$_username\_$_jenisKelamin\_$_formattedDate\_$_transcript\_$_dialek\_hp";
+                      String _filename1 =
+                          "$_username\_$_jenisKelamin\_$_formattedDate\_";
+                      String _filename2 = "\_$_transcript\_$_dialek\_hp";
 
-                    // example: rut122_f_20201216_001_audiobuku_yogyakarta_hp
-                    setState(() {
-                      indextranscript.dirName = _dirname;
-                      indextranscript.fileName = [
-                        _filename1,
-                        _index.toString(),
-                        _filename2
-                      ];
-                      indextranscript.transcriptTitle = "$_transcript";
-                      indextranscript.userName = "$_username";
-                      indextranscript.dateTime = "$_formattedDate";
-                    });
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              RecorderPage(indextranscript: indextranscript)),
-                    );
-                    // }
+                      // example: rut122_f_20201216_001_audiobuku_yogyakarta_hp
+                      setState(() {
+                        indextranscript.dirName = _dirname;
+                        indextranscript.fileName = [
+                          _filename1,
+                          _index.toString(),
+                          _filename2
+                        ];
+                        indextranscript.transcriptTitle = "$_transcript";
+                        indextranscript.userName = "$_username";
+                        indextranscript.dateTime = "$_formattedDate";
+                        indextranscript.dialek = "${dialekField.text}";
+                      });
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                RecorderPage(indextranscript: indextranscript)),
+                      );
+                    }
                   },
                 ),
               ]),
@@ -392,8 +403,19 @@ class RecorderPageState extends State<RecorderPage> {
   Widget build(BuildContext context) {
     return new MaterialApp(
       home: new Scaffold(
+        // appBar: PreferredSize(
+        //   preferredSize: Size.fromHeight(100.0),
+        //   child: AppBar(
+        //     title: Text(
+        //         "${indextranscript.transcriptTitle}:\n${indextranscript.number}/${transcriptLength}"),
+        //     backgroundColor: Color.fromARGB(255, 39, 169, 225),
+        //   ),
+        // ),
         appBar: AppBar(
-          title: Text(indextranscript.transcriptTitle),
+          centerTitle: true,
+          title: Text(
+              "${indextranscript.transcriptTitle}\n${indextranscript.number}/${transcriptLength}",
+              textAlign: TextAlign.center),
           backgroundColor: Color.fromARGB(255, 39, 169, 225),
         ),
         body: SafeArea(
@@ -405,17 +427,29 @@ class RecorderPageState extends State<RecorderPage> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
                       // * nama file transcript
-                      new Container(
-                        width: MediaQuery.of(context).size.width * 0.85,
-                        height: MediaQuery.of(context).size.height * 0.05,
-                        padding: EdgeInsets.all(10.0),
-                        // child: Flexible(
-                        child: new Text(
-                          '${indextranscript.fileName.join()}',
-                          textAlign: TextAlign.center,
-                        ),
-                        // ),
-                      ),
+                      // new Container(
+                      //   width: MediaQuery.of(context).size.width * 0.85,
+                      //   height: MediaQuery.of(context).size.height * 0.05,
+                      //   padding: EdgeInsets.all(10.0),
+                      //   // child: Flexible(
+
+                      //   child: Wrap(
+                      //     direction: Axis.horizontal,
+                      //     alignment: WrapAlignment.end,
+                      //     // spacing: 10.0,
+                      //     // runSpacing: 20.0,
+                      //     children: [
+                      //       new Text(
+                      //         '${indextranscript.fileName.join()}',
+                      //         textAlign: TextAlign.center,
+                      //       ),
+                      //     ],
+                      //   ),
+                      //   // ),
+                      // ),
+                      // SizedBox(
+                      //   height: 10.0,
+                      // ),
                       // * Indikator bar
                       // Padding(
                       // padding: const EdgeInsets.all(8.0),
@@ -480,7 +514,7 @@ class RecorderPageState extends State<RecorderPage> {
                               widgetBuilder: (_, CurrentRemainingTime time) {
                                 if (_stateRecord == 0) {
                                   return Text(
-                                      'Mulai baca saat warna hijau muncul!');
+                                      'Harap diam saat warna merah\nMulai baca saat warna hijau muncul!');
                                 } else if (time == null) {
                                   return Text('Mulai!');
                                 } else {
@@ -665,7 +699,7 @@ class RecorderPageState extends State<RecorderPage> {
             children: <Widget>[
               DrawerHeader(
                 child: Text(
-                  'STATUS - ${indextranscript.dateTime}\n\nusername: ${indextranscript.userName}\njudul transcript: ${indextranscript.transcriptTitle}',
+                  'STATUS - ${indextranscript.dateTime}\n\nusername: ${indextranscript.userName}\ndialek: ${indextranscript.dialek}\njudul transcript: ${indextranscript.transcriptTitle}',
                   style: TextStyle(color: Colors.white),
                 ),
                 decoration: BoxDecoration(
@@ -1216,13 +1250,14 @@ class RecorderPageState extends State<RecorderPage> {
             TextButton(
               child: Text('Ganti Transcript'),
               onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.pop(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          RecorderPage(indextranscript: indextranscript)),
-                );
+                Navigator.of(context).popUntil((route) => route.isFirst);
+                // Navigator.of(context).pop();
+                // Navigator.pop(
+                //   context,
+                //   MaterialPageRoute(
+                //       builder: (context) =>
+                //           RecorderPage(indextranscript: indextranscript)),
+                // );
               },
             ),
           ],
