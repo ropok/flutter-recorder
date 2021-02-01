@@ -399,248 +399,262 @@ class RecorderPageState extends State<RecorderPage> {
         body: SafeArea(
           child: new Padding(
             padding: new EdgeInsets.all(1.0),
-            child: SingleChildScrollView(
-              child: new Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    // * nama file transcript
-                    new Container(
-                      width: MediaQuery.of(context).size.width * 0.85,
-                      height: MediaQuery.of(context).size.height * 0.05,
-                      padding: EdgeInsets.all(10.0),
-                      // child: Flexible(
-                      child: new Text(
-                        '${indextranscript.fileName.join()}',
-                        textAlign: TextAlign.center,
+            child: Wrap(
+              children: [
+                new Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      // * nama file transcript
+                      new Container(
+                        width: MediaQuery.of(context).size.width * 0.85,
+                        height: MediaQuery.of(context).size.height * 0.05,
+                        padding: EdgeInsets.all(10.0),
+                        // child: Flexible(
+                        child: new Text(
+                          '${indextranscript.fileName.join()}',
+                          textAlign: TextAlign.center,
+                        ),
+                        // ),
                       ),
-                      // ),
-                    ),
-                    // * Indikator bar
-                    // Padding(
-                    // padding: const EdgeInsets.all(8.0),
-                    new Container(
-                      child: SizedBox(
-                          width: MediaQuery.of(context).size.width * 1,
-                          height: MediaQuery.of(context).size.height * 0.02,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: colorIndicator[_stateRecord],
-                            ),
-                          )),
-                    ),
-                    // ),
-                    // * TEXT TRANSCRIPT
-                    new Container(
-                      width: MediaQuery.of(context).size.width * 0.85,
-                      height: MediaQuery.of(context).size.height * 0.4,
-                      child: FutureBuilder(
-                          future: loadAsset(),
-                          builder:
-                              (BuildContext context, AsyncSnapshot snapshot) {
-                            // this condition is important
-                            if (snapshot.data == null) {
-                              return Center(
-                                child: Text('loading data'),
-                              );
-                            } else {
-                              return Center(
-                                  // karena newline tidak terbaca sebagai split
-                                  child: Text(
-                                snapshot.data[(indextranscript.number * 2) + 1],
-                                style: TextStyle(height: 1.25, fontSize: 32),
-                              ));
-                            }
-                          }),
-                    ),
-                    // * Indikator bar
-                    new Container(
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: <Widget>[
-                          SizedBox(
+                      // * Indikator bar
+                      // Padding(
+                      // padding: const EdgeInsets.all(8.0),
+                      new Container(
+                        child: SizedBox(
                             width: MediaQuery.of(context).size.width * 1,
-                            height: MediaQuery.of(context).size.height * 0.08,
+                            height: MediaQuery.of(context).size.height * 0.02,
                             child: DecoratedBox(
                               decoration: BoxDecoration(
                                 color: colorIndicator[_stateRecord],
                               ),
-                            ),
-                            // new Text("A"),
-                          ),
-                          CountdownTimer(
-                            controller: countdownTimerController,
-                            endTime: endTime,
-                            // onEnd: () {
-                            //   endTime = DateTime.now().millisecondsSinceEpoch +
-                            //       1000 * 3;
-                            // },
-                            // textStyle: TextStyle(fontSize: 18),
-                            widgetBuilder: (_, CurrentRemainingTime time) {
-                              if (_stateRecord == 0) {
-                                return Text(
-                                    'Mulai baca saat warna hijau muncul!');
-                              } else if (time == null) {
-                                return Text('Mulai!');
+                            )),
+                      ),
+                      // ),
+                      // * TEXT TRANSCRIPT
+                      new Container(
+                        width: MediaQuery.of(context).size.width * 0.85,
+                        height: MediaQuery.of(context).size.height * 0.4,
+                        child: FutureBuilder(
+                            future: loadAsset(),
+                            builder:
+                                (BuildContext context, AsyncSnapshot snapshot) {
+                              // this condition is important
+                              if (snapshot.data == null) {
+                                return Center(
+                                  child: Text('loading data'),
+                                );
                               } else {
-                                return Text("${time.sec}");
+                                return Center(
+                                    // karena newline tidak terbaca sebagai split
+                                    child: Text(
+                                  snapshot
+                                      .data[(indextranscript.number * 2) + 1],
+                                  style: TextStyle(height: 1.25, fontSize: 32),
+                                ));
                               }
-                              // if (time == null) {
-                              //   return Text('Mulai!');
-                              // } else if (_stateRecord == 0) {
-                              //   return Text('Selesai');
-                              // } else
-                              //   return Text("${time.sec}");
-                            },
+                            }),
+                      ),
+                      // * Indikator bar
+                      new Container(
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: <Widget>[
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width * 1,
+                              height: MediaQuery.of(context).size.height * 0.08,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: colorIndicator[_stateRecord],
+                                ),
+                              ),
+                              // new Text("A"),
+                            ),
+                            CountdownTimer(
+                              controller: countdownTimerController,
+                              endTime: endTime,
+                              // onEnd: () {
+                              //   endTime = DateTime.now().millisecondsSinceEpoch +
+                              //       1000 * 3;
+                              // },
+                              // textStyle: TextStyle(fontSize: 18),
+                              widgetBuilder: (_, CurrentRemainingTime time) {
+                                if (_stateRecord == 0) {
+                                  return Text(
+                                      'Mulai baca saat warna hijau muncul!');
+                                } else if (time == null) {
+                                  return Text('Mulai!');
+                                } else {
+                                  return Text("${time.sec}");
+                                }
+                                // if (time == null) {
+                                //   return Text('Mulai!');
+                                // } else if (_stateRecord == 0) {
+                                //   return Text('Selesai');
+                                // } else
+                                //   return Text("${time.sec}");
+                              },
+                            ),
+                            // Countdown(countdownController: countdownController),
+                            // new Text("3..2..1"),
+                          ],
+                        ),
+                      ),
+                      // new SizedBox(
+                      //   height: 65.0,
+                      // ),
+                      // * record button
+                      new Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          new Container(
+                            child: new FlatButton(
+                              minWidth: MediaQuery.of(context).size.width * 0.2,
+                              height: MediaQuery.of(context).size.height * 0.2,
+                              onPressed: _isButtonDisabled
+                                  ? null
+                                  : () {
+                                      switch (_currentStatus) {
+                                        case RecordingStatus.Unset:
+                                          {
+                                            // countdownController.start();
+                                            endTime = DateTime.now()
+                                                    .millisecondsSinceEpoch +
+                                                1000 * 3;
+                                            onRecordTranscript();
+                                            break;
+                                          }
+                                        case RecordingStatus.Recording:
+                                          {
+                                            // countdownController.stop();
+                                            endTime = DateTime.now()
+                                                    .millisecondsSinceEpoch +
+                                                1000 * 3;
+                                            // countdownTimerController.dispose();
+                                            _stop();
+                                            break;
+                                          }
+                                        case RecordingStatus.Stopped:
+                                          {
+                                            // countdownController.start();
+                                            endTime = DateTime.now()
+                                                    .millisecondsSinceEpoch +
+                                                1000 * 3;
+                                            onRecordTranscript();
+                                            break;
+                                          }
+                                        default:
+                                          break;
+                                      }
+                                    },
+                              child: _stateRecord == 0
+                                  ? Stack(
+                                      alignment: Alignment.center,
+                                      children: <Widget>[
+                                        new Icon(
+                                          Icons.stop_circle,
+                                          color: Colors.redAccent,
+                                          size: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.25,
+                                        ),
+                                        new Text(
+                                          "record",
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : Stack(
+                                      alignment: Alignment.center,
+                                      children: <Widget>[
+                                        new Icon(
+                                          Icons.stop_rounded,
+                                          size: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.3,
+                                        ),
+                                        new Text(
+                                          "stop",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                              // new Icon(
+                              //     Icons.stop_outlined,
+                              //     size: MediaQuery.of(context).size.width * 0.25,
+                              //   ),
+                            ),
+                            //     ),
+                            //   ],
+                            // ),
                           ),
-                          // Countdown(countdownController: countdownController),
-                          // new Text("3..2..1"),
+                          new Row(
+                            // crossAxisAlignment: CrossAxisAlignment.center,
+                            // mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              // * PREVIOUS BUTTON
+                              new FlatButton(
+                                minWidth:
+                                    MediaQuery.of(context).size.width * 0.1,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.05,
+                                onPressed: _stateRecord == 0
+                                    ? () {
+                                        onPreviousTranscript();
+                                      }
+                                    : null, //
+                                child: new Icon(
+                                  Icons.navigate_before,
+                                  size:
+                                      MediaQuery.of(context).size.width * 0.15,
+                                ),
+                                // color: _stateRecord == 0
+                                //     ? Colors.lightBlue
+                                //     : Colors.blueGrey,
+                              ),
+                              SizedBox(
+                                width: 10.0,
+                              ),
+                              // * Next Transcript
+                              new FlatButton(
+                                minWidth:
+                                    MediaQuery.of(context).size.width * 0.1,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.05,
+                                onPressed: _stateRecord == 0
+                                    ? () {
+                                        onNextTranscript();
+                                      }
+                                    : null, //
+                                child: new Icon(
+                                  Icons.navigate_next,
+                                  size:
+                                      MediaQuery.of(context).size.width * 0.15,
+                                ),
+                                // color: _stateRecord == 0
+                                //     ? Colors.lightBlue
+                                //     : Colors.blueGrey,
+                              ),
+                            ],
+                          ),
                         ],
                       ),
-                    ),
-                    new SizedBox(
-                      height: 65.0,
-                    ),
-                    new Container(
-                      // padding: EdgeInsets.all(40.0),
-                      // alignment: Alignment.bottomCenter,
-                      // child: Align(
-                      //   alignment: FractionalOffset.bottomCenter,
-                      // child: new Row(
-                      //   // crossAxisAlignment: CrossAxisAlignment.center,
-                      //   // mainAxisSize: MainAxisSize.max,
-                      //   mainAxisAlignment: MainAxisAlignment.center,
-                      //   children: <Widget>[
-                      //     Padding(
-                      //       // RECORD button
-                      //       padding: const EdgeInsets.all(8.0),
-                      child: new FlatButton(
-                        minWidth: MediaQuery.of(context).size.width * 0.2,
-                        height: MediaQuery.of(context).size.height * 0.2,
-                        onPressed: _isButtonDisabled
-                            ? null
-                            : () {
-                                switch (_currentStatus) {
-                                  case RecordingStatus.Unset:
-                                    {
-                                      // countdownController.start();
-                                      endTime = DateTime.now()
-                                              .millisecondsSinceEpoch +
-                                          1000 * 3;
-                                      onRecordTranscript();
-                                      break;
-                                    }
-                                  case RecordingStatus.Recording:
-                                    {
-                                      // countdownController.stop();
-                                      endTime = DateTime.now()
-                                              .millisecondsSinceEpoch +
-                                          1000 * 3;
-                                      // countdownTimerController.dispose();
-                                      _stop();
-                                      break;
-                                    }
-                                  case RecordingStatus.Stopped:
-                                    {
-                                      // countdownController.start();
-                                      endTime = DateTime.now()
-                                              .millisecondsSinceEpoch +
-                                          1000 * 3;
-                                      onRecordTranscript();
-                                      break;
-                                    }
-                                  default:
-                                    break;
-                                }
-                              },
-                        child: _stateRecord == 0
-                            ? Stack(
-                                alignment: Alignment.center,
-                                children: <Widget>[
-                                  new Icon(
-                                    Icons.stop_circle,
-                                    color: Colors.redAccent,
-                                    size: MediaQuery.of(context).size.width *
-                                        0.25,
-                                  ),
-                                  new Text(
-                                    "record",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : Stack(
-                                alignment: Alignment.center,
-                                children: <Widget>[
-                                  new Icon(
-                                    Icons.stop_rounded,
-                                    size:
-                                        MediaQuery.of(context).size.width * 0.3,
-                                  ),
-                                  new Text(
-                                    "stop",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                        // new Icon(
-                        //     Icons.stop_outlined,
-                        //     size: MediaQuery.of(context).size.width * 0.25,
-                        //   ),
+
+                      // new SizedBox(
+                      new SizedBox(
+                        height: 15.0,
                       ),
-                      //     ),
-                      //   ],
                       // ),
-                    ),
-                    // new SizedBox(
-                    new SizedBox(
-                      height: 15.0,
-                    ),
-                    // ),
-                    new Row(
-                      // crossAxisAlignment: CrossAxisAlignment.center,
-                      // mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        // * PREVIOUS BUTTON
-                        new FlatButton(
-                          minWidth: MediaQuery.of(context).size.width * 0.1,
-                          height: MediaQuery.of(context).size.height * 0.05,
-                          onPressed: _stateRecord == 0
-                              ? () {
-                                  onPreviousTranscript();
-                                }
-                              : null, //
-                          child: new Icon(Icons.navigate_before),
-                          // color: _stateRecord == 0
-                          //     ? Colors.lightBlue
-                          //     : Colors.blueGrey,
-                        ),
-                        SizedBox(
-                          width: 10.0,
-                        ),
-                        // * Next Transcript
-                        new FlatButton(
-                          minWidth: MediaQuery.of(context).size.width * 0.1,
-                          height: MediaQuery.of(context).size.height * 0.05,
-                          onPressed: _stateRecord == 0
-                              ? () {
-                                  onNextTranscript();
-                                }
-                              : null, //
-                          child: new Icon(Icons.navigate_next),
-                          // color: _stateRecord == 0
-                          //     ? Colors.lightBlue
-                          //     : Colors.blueGrey,
-                        ),
-                      ],
-                    ),
-                  ]),
+                    ]),
+              ],
             ),
           ),
         ),
