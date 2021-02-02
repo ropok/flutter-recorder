@@ -340,6 +340,7 @@ class RecorderPage extends StatefulWidget {
 
 class RecorderPageState extends State<RecorderPage> {
   int endTime = DateTime.now().millisecondsSinceEpoch + 0 * 3;
+  int endTimeRecord = DateTime.now().millisecondsSinceEpoch + 0 * 3;
   CountdownController countdownController;
   CountdownTimerController countdownTimerController;
   IndexTranscript indextranscript;
@@ -362,11 +363,20 @@ class RecorderPageState extends State<RecorderPage> {
   bool _isButtonDisabled;
   int _stateRecord;
 
+  // * warna dari bar indikator, berdasarkan _stateRecord
   List colorIndicator = [
     Colors.grey,
     Colors.redAccent,
     Colors.greenAccent,
     Colors.redAccent
+  ];
+
+  // * isi text dari bar indikator, berdasarkan _stateRecord
+  List<String> textIndicator = [
+    "Harap diam saat warna merah\nMulai baca saat warna hijau muncul!",
+    "",
+    "",
+    ""
   ];
 
   final ziptranscript = ZipTranscript(
@@ -503,31 +513,42 @@ class RecorderPageState extends State<RecorderPage> {
                               ),
                               // new Text("A"),
                             ),
-                            CountdownTimer(
-                              controller: countdownTimerController,
-                              endTime: endTime,
-                              // onEnd: () {
-                              //   endTime = DateTime.now().millisecondsSinceEpoch +
-                              //       1000 * 3;
-                              // },
-                              // textStyle: TextStyle(fontSize: 18),
-                              widgetBuilder: (_, CurrentRemainingTime time) {
-                                if (_stateRecord == 0) {
-                                  return Text(
-                                      'Harap diam saat warna merah\nMulai baca saat warna hijau muncul!');
-                                } else if (time == null) {
-                                  return Text('Mulai!');
-                                } else {
-                                  return Text("${time.sec}");
-                                }
-                                // if (time == null) {
-                                //   return Text('Mulai!');
-                                // } else if (_stateRecord == 0) {
-                                //   return Text('Selesai');
-                                // } else
-                                //   return Text("${time.sec}");
-                              },
-                            ),
+                            new Text("${textIndicator[_stateRecord]}"),
+
+                            // new Text(() {
+                            //   return "ABC";
+                            // }),
+                            // Text(((){
+                            //   if(true){
+                            //     return "this";
+                            //   }
+                            // }),
+                            // CountdownTimer(
+                            //   // controller: countdownTimerController,
+                            //   endTime: endTime,
+                            //   // onEnd: () {
+                            //   //   endTime = DateTime.now().millisecondsSinceEpoch +
+                            //   //       1000 * 3;
+                            //   // },
+                            //   // textStyle: TextStyle(fontSize: 18),
+                            //   widgetBuilder: (_, CurrentRemainingTime time) {
+                            //     if (_stateRecord == 0) {
+                            //       return Text(
+                            //           'Harap diam saat warna merah\nMulai baca saat warna hijau muncul!');
+                            //     } else if (time == null) {
+                            //       return Text('');
+                            //     } else {
+                            //       return Text("");
+                            //     }
+                            //     // if (time == null) {
+                            //     //   return Text('Mulai!');
+                            //     // } else if (_stateRecord == 0) {
+                            //     //   return Text('Selesai');
+                            //     // } else
+                            //     //   return Text("${time.sec}");
+                            //   },
+                            // ),
+                            // CountdownTimer()
                             // Countdown(countdownController: countdownController),
                             // new Text("3..2..1"),
                           ],
@@ -551,18 +572,18 @@ class RecorderPageState extends State<RecorderPage> {
                                         case RecordingStatus.Unset:
                                           {
                                             // countdownController.start();
-                                            endTime = DateTime.now()
-                                                    .millisecondsSinceEpoch +
-                                                1000 * 3;
+                                            // endTime = DateTime.now()
+                                            //         .millisecondsSinceEpoch +
+                                            //     1000 * 1;
                                             onRecordTranscript();
                                             break;
                                           }
                                         case RecordingStatus.Recording:
                                           {
                                             // countdownController.stop();
-                                            endTime = DateTime.now()
-                                                    .millisecondsSinceEpoch +
-                                                1000 * 3;
+                                            // endTime = DateTime.now()
+                                            //         .millisecondsSinceEpoch +
+                                            //     1000 * 1;
                                             // countdownTimerController.dispose();
                                             _stop();
                                             break;
@@ -570,9 +591,9 @@ class RecorderPageState extends State<RecorderPage> {
                                         case RecordingStatus.Stopped:
                                           {
                                             // countdownController.start();
-                                            endTime = DateTime.now()
-                                                    .millisecondsSinceEpoch +
-                                                1000 * 3;
+                                            // endTime = DateTime.now()
+                                            //         .millisecondsSinceEpoch +
+                                            //     1000 * 1;
                                             onRecordTranscript();
                                             break;
                                           }
@@ -1113,33 +1134,35 @@ class RecorderPageState extends State<RecorderPage> {
   }
 
   _stop() async {
-    Timer _timer;
-    int _start = 1;
+    // Timer _timer;
+    // int _start = 1;
     setState(() {
       _stateRecord = 3;
       _isButtonDisabled = true;
     });
-    const oneSec = const Duration(seconds: 1);
-    _timer = new Timer.periodic(oneSec, (Timer timer) {
-      if (_start == 0) {
-        // * times up here
-        timer.cancel();
-        _stopRecord();
-        setState(() {
-          // * 1->2 atau 3->0
-          _stateRecord == 1 ? _stateRecord = 2 : _stateRecord = 0;
-          _isButtonDisabled = false; // * button kembali aktif
-        });
-        _countDirs();
-        // dirStatSync(ziptranscript.zipDir);
-        onNextTranscript(); // * auto next after stop pressed
-
-      } else {
-        setState(() {
-          _start--;
-        });
-      }
+    // const oneSec = const Duration(seconds: 1);
+    // _timer = new Timer.periodic(oneSec, (Timer timer) {
+    //   if (_start == 0) {
+    Timer(Duration(seconds: 1), () {
+      _stopRecord();
+      setState(() {
+        // * 1->2 atau 3->0
+        _stateRecord == 1 ? _stateRecord = 2 : _stateRecord = 0;
+        _isButtonDisabled = false; // * button kembali aktif
+      });
+      _countDirs();
+      // dirStatSync(ziptranscript.zipDir);
+      onNextTranscript(); // * auto next after stop pressed
     });
+    // * times up here
+    //     timer.cancel();
+
+    //   } else {
+    //     setState(() {
+    //       _start--;
+    //     });
+    //   }
+    // });
   }
 
   void onPlayAudio() async {
@@ -1168,23 +1191,25 @@ class RecorderPageState extends State<RecorderPage> {
   }
 
   countDownTimerstart(int _start) {
-    Timer _timer;
-    const oneSec = const Duration(seconds: 1);
-    _timer = new Timer.periodic(oneSec, (Timer timer) {
-      if (_start == 0) {
-        // * times up here
-        setState(() {
-          timer.cancel();
-          // * 1->2 atau 3->0
-          _stateRecord == 1 ? _stateRecord = 2 : _stateRecord = 0;
-          _isButtonDisabled = false; // * button kembali aktif
-        });
-      } else {
-        setState(() {
-          _start--;
-        });
-      }
+    // Timer _timer;
+    // const oneSec = const Duration(seconds: 1);
+    // _timer = new Timer.periodic(oneSec, (Timer timer) {
+    //   if (_start == 0) {
+    Timer(Duration(seconds: _start), () {
+      // * times up here
+      setState(() {
+        // timer.cancel();
+        // * 1->2 atau 3->0
+        _stateRecord == 1 ? _stateRecord = 2 : _stateRecord = 0;
+        _isButtonDisabled = false; // * button kembali aktif
+      });
     });
+    //   } else {
+    //     setState(() {
+    //       _start--;
+    //     });
+    //   }
+    // });
   }
 
   void onNextTranscript() async {
