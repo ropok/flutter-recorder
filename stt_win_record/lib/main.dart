@@ -309,7 +309,6 @@ class RecorderExampleState extends State<RecorderExample> {
         ),
       ),
     );
-    // );
   }
 }
 
@@ -408,7 +407,7 @@ class RecorderPageState extends State<RecorderPage> {
         appBar: AppBar(
           centerTitle: true,
           title: Text(
-              "${indextranscript.transcriptTitle}\n${indextranscript.number}/${transcriptLength}",
+              "${indextranscript.transcriptTitle}\n${indextranscript.number}/$transcriptLength",
               textAlign: TextAlign.center),
           backgroundColor: Color.fromARGB(255, 39, 169, 225),
         ),
@@ -802,7 +801,6 @@ class RecorderPageState extends State<RecorderPage> {
   }
 
   Future _countDirs() async {
-    int totalSize;
     io.Directory appDocDirectory;
     if (io.Platform.isIOS) {
       appDocDirectory = await getApplicationDocumentsDirectory();
@@ -827,7 +825,6 @@ class RecorderPageState extends State<RecorderPage> {
     });
   }
 
-  // TODO: count .zip filesize
   Future<String> dirStatSync(String dirPath) async {
     int fileNum = 0;
     int totalSize = 0;

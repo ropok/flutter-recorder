@@ -37,6 +37,7 @@ dependencies:
   flutter_archive: ^2.0.1
   fluttertoast: ^7.1.6
   flutter_countdown_timer: ^3.0.0
+  open_file: ^3.0.3
 
 dev_dependencies:
   flutter_test:
